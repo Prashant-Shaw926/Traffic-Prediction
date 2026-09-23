@@ -22,3 +22,20 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+
+# Processed data and trained weights (keep data/raw)
+data/processed/*.csv
+models/trained/**
+!models/trained/.gitkeep
+models/artifacts/**
+!models/artifacts/.gitkeep
+!models/artifacts/*.joblib
+!models/artifacts/*.json

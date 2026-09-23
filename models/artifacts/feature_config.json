@@ -1,0 +1,35 @@
+{
+  "features": [
+    "hour",
+    "day_of_week",
+    "day",
+    "month",
+    "is_weekend",
+    "hour_sin",
+    "hour_cos",
+    "Junction",
+    "vehicles_lag_1",
+    "vehicles_lag_2",
+    "vehicles_lag_3",
+    "vehicles_lag_24",
+    "vehicles_lag_168"
+  ],
+  "target": "Vehicles",
+  "lags": [
+    1,
+    2,
+    3,
+    24,
+    168
+  ],
+  "frequency": "1h",
+  "split_fractions": {
+    "train": 0.7,
+    "validation": 0.15,
+    "test": 0.15
+  },
+  "max_short_gap_hours": 3,
+  "scaler": "MinMaxScaler",
+  "scaler_fitted_on": "train",
+  "processed_values": "unscaled"
+}

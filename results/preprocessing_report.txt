@@ -1,0 +1,62 @@
+Traffic prediction - preprocessing report
+
+== Counts ==
+original_rows=48120
+invalid_timestamps_dropped=0
+duplicate_junction_datetime_dropped=0
+hourly_slots_inserted=0
+short_gaps_filled=0
+long_gap_rows_dropped=0
+nonphysical_negative_dropped=0
+rows_after_clean=48120
+rows_dropped_lag_nan=672
+final_rows=47448
+train_rows=33211  validation_rows=7115  test_rows=7122
+
+== Lag NaN drops per Junction ==
+  Junction 1: dropped=168 remaining=14424
+  Junction 2: dropped=168 remaining=14424
+  Junction 3: dropped=168 remaining=14424
+  Junction 4: dropped=168 remaining=4176
+
+== Features ==
+hour, day_of_week, day, month, is_weekend, hour_sin, hour_cos, Junction, vehicles_lag_1, vehicles_lag_2, vehicles_lag_3, vehicles_lag_24, vehicles_lag_168
+target=Vehicles
+ID is not a feature and is not in processed files.
+
+== Lag leakage note ==
+Lags are computed on the full per-junction history BEFORE the temporal split. A validation or test row may use vehicles_lag_* from earlier timestamps. That is valid at inference: those counts would already be known. Forbidden: using a future Vehicles value as a feature, shuffling, or fitting the scaler on validation/test.
+
+== Temporal split boundaries (per Junction) ==
+Junction 1: n=14424
+  Train      2015-11-08 00:00:00 -> 2017-01-01 15:00:00  n=10096
+  Validation 2017-01-01 16:00:00 -> 2017-04-01 18:00:00  n=2163
+  Test       2017-04-01 19:00:00 -> 2017-06-30 23:00:00  n=2165
+Junction 2: n=14424
+  Train      2015-11-08 00:00:00 -> 2017-01-01 15:00:00  n=10096
+  Validation 2017-01-01 16:00:00 -> 2017-04-01 18:00:00  n=2163
+  Test       2017-04-01 19:00:00 -> 2017-06-30 23:00:00  n=2165
+Junction 3: n=14424
+  Train      2015-11-08 00:00:00 -> 2017-01-01 15:00:00  n=10096
+  Validation 2017-01-01 16:00:00 -> 2017-04-01 18:00:00  n=2163
+  Test       2017-04-01 19:00:00 -> 2017-06-30 23:00:00  n=2165
+Junction 4: n=4176
+  Train      2017-01-08 00:00:00 -> 2017-05-09 18:00:00  n=2923
+  Validation 2017-05-09 19:00:00 -> 2017-06-04 20:00:00  n=626
+  Test       2017-06-04 21:00:00 -> 2017-06-30 23:00:00  n=627
+
+== Missing values in processed features ==
+0
+
+== Outliers ==
+IQR flagged (retained)=1558  Z-score flagged (retained)=550
+retain all flagged rows; peak-hour spikes are valid traffic
+
+== Scaler ==
+type=MinMaxScaler
+fitted_on=train only
+feature_scaler=D:\College project\traffic-prediction\models\artifacts\feature_scaler.joblib
+target_scaler=D:\College project\traffic-prediction\models\artifacts\target_scaler.joblib
+feature_config=D:\College project\traffic-prediction\models\artifacts\feature_config.json
+
+Processed CSVs are unscaled. max_short_gap_hours=3.

@@ -1,0 +1,22 @@
+"""Training hyperparameters. Lookback lives here, not scattered in model files."""
+
+from __future__ import annotations
+
+LOOKBACK = 168
+HORIZON_STEPS = 1
+N_FEATURES = 13
+BATCH_SIZE = 32
+LEARNING_RATE = 0.001
+DROPOUT = 0.2
+LSTM_UNITS_1 = 128
+LSTM_UNITS_2 = 64
+DENSE_UNITS = 32
+SEED = 42
+MAX_EPOCHS = 50
+EARLY_STOPPING_PATIENCE = 5
+
+SMOKE_JUNCTION = 1
+SMOKE_TRAIN_WINDOWS = 256
+SMOKE_VAL_WINDOWS = 64
+SMOKE_EPOCHS = 2
+SMOKE_EARLY_STOPPING_PATIENCE = 1

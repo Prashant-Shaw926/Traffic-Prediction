@@ -1,0 +1,110 @@
+Traffic prediction - raw dataset inspection
+Source file: D:\College project\traffic-prediction\data\raw\traffic.csv
+
+== Shape ==
+rows=48120, columns=4
+
+== Columns ==
+DateTime, Junction, Vehicles, ID
+
+== Dtypes ==
+DateTime      str
+Junction    int64
+Vehicles    int64
+ID          int64
+
+== First 10 rows ==
+           DateTime  Junction  Vehicles          ID
+2015-11-01 00:00:00         1        15 20151101001
+2015-11-01 01:00:00         1        13 20151101011
+2015-11-01 02:00:00         1        10 20151101021
+2015-11-01 03:00:00         1         7 20151101031
+2015-11-01 04:00:00         1         9 20151101041
+2015-11-01 05:00:00         1         6 20151101051
+2015-11-01 06:00:00         1         9 20151101061
+2015-11-01 07:00:00         1         8 20151101071
+2015-11-01 08:00:00         1        11 20151101081
+2015-11-01 09:00:00         1        12 20151101091
+
+== Last 10 rows ==
+           DateTime  Junction  Vehicles          ID
+2017-06-30 14:00:00         4        10 20170630144
+2017-06-30 15:00:00         4        14 20170630154
+2017-06-30 16:00:00         4        16 20170630164
+2017-06-30 17:00:00         4        16 20170630174
+2017-06-30 18:00:00         4        17 20170630184
+2017-06-30 19:00:00         4        11 20170630194
+2017-06-30 20:00:00         4        30 20170630204
+2017-06-30 21:00:00         4        16 20170630214
+2017-06-30 22:00:00         4        22 20170630224
+2017-06-30 23:00:00         4        12 20170630234
+
+== Missing values ==
+DateTime    0
+Junction    0
+Vehicles    0
+ID          0
+total missing cells=0
+
+== Duplicate rows ==
+full-row duplicates=0
+
+== Junctions ==
+column=Junction
+unique values (4): [1, 2, 3, 4]
+Junction
+1    14592
+2    14592
+3    14592
+4     4344
+
+== Timestamps ==
+column=DateTime
+unparseable timestamps=0
+overall min=2015-11-01 00:00:00
+overall max=2017-06-30 23:00:00
+
+== Time frequency (computed, not assumed) ==
+  Junction 1: n=14592, 2015-11-01 00:00:00 -> 2017-06-30 23:00:00, median gap=1 hour, min gap=1 hour, max gap=1 hour, estimated missing slots=0
+  Junction 2: n=14592, 2015-11-01 00:00:00 -> 2017-06-30 23:00:00, median gap=1 hour, min gap=1 hour, max gap=1 hour, estimated missing slots=0
+  Junction 3: n=14592, 2015-11-01 00:00:00 -> 2017-06-30 23:00:00, median gap=1 hour, min gap=1 hour, max gap=1 hour, estimated missing slots=0
+  Junction 4: n=4344, 2017-01-01 00:00:00 -> 2017-06-30 23:00:00, median gap=1 hour, min gap=1 hour, max gap=1 hour, estimated missing slots=0
+inferred frequency (median of per-junction medians): 1 hour
+
+== Target candidate ==
+column=Vehicles
+count    48120.000000
+mean        22.791334
+std         20.750063
+min          1.000000
+25%          9.000000
+50%         15.000000
+75%         29.000000
+max        180.000000
+
+== Paper features unavailable in this CSV ==
+- weather: not present (do not fabricate)
+- holiday / is_holiday: not present (do not fabricate)
+- road type: not present (do not fabricate)
+- GPS / latitude / longitude: not present (do not fabricate)
+- speed: not present (do not fabricate)
+- occupancy: not present (do not fabricate)
+
+== Proposed feature set (next slice, not implemented here) ==
+- hour, day, month, day_of_week, is_weekend (from timestamp)
+- hour_sin, hour_cos (cyclic encoding of hour)
+- lags at t-1, t-2, t-3 (previous hours), t-24 (previous day), t-168 (previous week) - only because frequency is hourly
+- Junction as a location identifier
+- target: Vehicles (traffic volume / vehicle count)
+
+== Proposed preprocessing pipeline (next slice, not implemented here) ==
+1. Parse timestamps; drop or flag unparseable rows
+2. Deduplicate full rows; resolve duplicate timestamp+junction if any
+3. Per-junction regularize to the inferred frequency; interpolate/forward-fill short gaps
+4. Outlier review with IQR/Z-score, but do not drop valid peak-hour spikes
+5. Engineer only the proposed features above
+6. Temporal split 70/15/15 (train -> val -> test in time); no shuffle
+7. Fit MinMaxScaler on train only; transform val/test; persist scaler
+8. Save to data/processed/traffic_processed.csv; never overwrite data/raw/
+
+Inspection only. No cleaning, training, or metrics were produced.

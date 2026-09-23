@@ -1,0 +1,12 @@
+Traffic prediction - preprocessing validation checks
+
+PASS  no_nan_in_model_features: nan_cells=0
+PASS  no_duplicate_junction_datetime: duplicates=0
+PASS  sorted_within_junction: Junction then DateTime
+PASS  no_id_column: ID_present=False
+PASS  temporal_order_per_junction: train max < val min < test min; J1 train_end=2017-01-01 15:00:00 val=[2017-01-01 16:00:00, 2017-04-01 18:00:00] test_start=2017-04-01 19:00:00 ok=True | J2 train_end=2017-01-01 15:00:00 val=[2017-01-01 16:00:00, 2017-04-01 18:00:00] test_start=2017-04-01 19:00:00 ok=True | J3 train_end=2017-01-01 15:00:00 val=[2017-01-01 16:00:00, 2017-04-01 18:00:00] test_start=2017-04-01 19:00:00 ok=True | J4 train_end=2017-05-09 18:00:00 val=[2017-05-09 19:00:00, 2017-06-04 20:00:00] test_start=2017-06-04 21:00:00 ok=True
+PASS  scaler_fitted_on_train_only: feature_scaler.data_min_/data_max_ match train feature min/max
+PASS  lags_within_junction: vehicles_lag_1[t] equals Vehicles[t-1] inside each Junction
+PASS  junctions_isolated: rows never mix Junction labels
+
+ALL CHECKS PASSED

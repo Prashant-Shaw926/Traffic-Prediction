@@ -1,0 +1,52 @@
+Traffic prediction - outlier report
+Method: IQR (1.5) and |z| > 3, computed per Junction.
+Action: all flagged rows RETAINED (except Vehicles < 0, which are non-physical).
+Peak-hour spikes are treated as genuine traffic, not errors.
+
+IQR-flagged rows (retained): 1558
+Z-score-flagged rows (retained): 550
+Non-physical Vehicles < 0 dropped: 0
+
+== Junction 1 ==
+n=14592 min=5 max=156
+Q1=27.00 Q3=59.00 IQR=32.00 fence=[-21.00, 107.00]
+IQR flagged=157  Z-score flagged=64
+Example IQR-flagged rows (kept):
+  2016-12-02 12:00:00  Vehicles=120
+  2017-01-16 12:00:00  Vehicles=120
+  2017-01-30 20:00:00  Vehicles=112
+  2017-02-13 14:00:00  Vehicles=143
+  2017-02-13 15:00:00  Vehicles=134
+
+== Junction 2 ==
+n=14592 min=1 max=48
+Q1=9.00 Q3=17.00 IQR=8.00 fence=[-3.00, 29.00]
+IQR flagged=831  Z-score flagged=236
+Example IQR-flagged rows (kept):
+  2015-12-18 10:00:00  Vehicles=30
+  2015-12-18 11:00:00  Vehicles=34
+  2015-12-18 12:00:00  Vehicles=40
+  2015-12-18 13:00:00  Vehicles=38
+  2015-12-18 14:00:00  Vehicles=38
+
+== Junction 3 ==
+n=14592 min=1 max=180
+Q1=7.00 Q3=18.00 IQR=11.00 fence=[-9.50, 34.50]
+IQR flagged=473  Z-score flagged=202
+Example IQR-flagged rows (kept):
+  2015-11-19 14:00:00  Vehicles=35
+  2015-11-19 15:00:00  Vehicles=39
+  2015-11-19 16:00:00  Vehicles=39
+  2016-01-22 11:00:00  Vehicles=38
+  2016-01-22 12:00:00  Vehicles=45
+
+== Junction 4 ==
+n=4344 min=1 max=36
+Q1=5.00 Q3=9.00 IQR=4.00 fence=[-1.00, 15.00]
+IQR flagged=97  Z-score flagged=48
+Example IQR-flagged rows (kept):
+  2017-01-02 22:00:00  Vehicles=17
+  2017-01-03 12:00:00  Vehicles=16
+  2017-01-03 15:00:00  Vehicles=16
+  2017-01-04 21:00:00  Vehicles=17
+  2017-01-10 18:00:00  Vehicles=20
