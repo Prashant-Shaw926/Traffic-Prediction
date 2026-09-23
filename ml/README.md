@@ -1,6 +1,6 @@
 # Traffic prediction ML pipeline
 
-Independent of the React UI and of Flask. Inspection and **preprocessing** (clean, features, temporal split, train-only scaling) are implemented. Model training is not.
+Independent of the React UI and of Flask. Inspection, preprocessing, and **full LSTM training** are implemented. GRU / CNN-LSTM / ARIMA are not trained yet.
 
 ## Dataset
 
@@ -23,6 +23,7 @@ pip install -r ml/requirements.txt
 python -m ml.data.inspect_data
 python -m ml.data.preprocess
 python -m ml.training.train_lstm --smoke
+python -m ml.training.train_lstm
 ```
 
 If `data/raw/traffic.csv` is missing, that command exits with download instructions.
@@ -38,8 +39,8 @@ If `data/raw/traffic.csv` is missing, that command exits with download instructi
 | `ml/data/clean_data.py` | implemented |
 | `ml/features/` | implemented |
 | `ml/training/sequence_generator.py` | implemented |
-| `ml/models/lstm.py` | implemented (smoke only) |
-| `ml/training/train_lstm.py` | `--smoke` only; full training not enabled |
+| `ml/models/lstm.py` | implemented |
+| `ml/training/train_lstm.py` | full training + `--smoke` |
 | `ml/evaluation/metrics.py` | implemented |
 | `ml/inference/predictor.py` | implemented |
 | GRU, CNN-LSTM, ARIMA | not trained yet |

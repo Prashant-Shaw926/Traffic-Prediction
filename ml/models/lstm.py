@@ -11,6 +11,7 @@ from ml.training.config import (
     LSTM_UNITS_1,
     LSTM_UNITS_2,
     N_FEATURES,
+    OUTPUT_ACTIVATION,
 )
 
 
@@ -22,6 +23,7 @@ def build_lstm(
     dropout: float = DROPOUT,
     dense_units: int = DENSE_UNITS,
     learning_rate: float = LEARNING_RATE,
+    output_activation: str = OUTPUT_ACTIVATION,
 ) -> Any:
     """Build and compile the configurable LSTM. Keras must already use the torch backend."""
     import keras
@@ -33,7 +35,7 @@ def build_lstm(
             keras.layers.Dropout(dropout),
             keras.layers.LSTM(lstm_units_2),
             keras.layers.Dense(dense_units, activation="relu"),
-            keras.layers.Dense(1),
+            keras.layers.Dense(1, activation=output_activation),
         ],
         name="lstm_traffic",
     )
