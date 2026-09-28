@@ -63,6 +63,7 @@ export const QueryBar = ({
           <input
             data-testid="time-start-input"
             type="datetime-local"
+            step={3600}
             className={fieldClass}
             value={start}
             onChange={(event) => onStartChange(event.target.value)}
@@ -76,6 +77,7 @@ export const QueryBar = ({
           <input
             data-testid="time-end-input"
             type="datetime-local"
+            step={3600}
             className={fieldClass}
             value={end}
             onChange={(event) => onEndChange(event.target.value)}
@@ -96,7 +98,10 @@ export const QueryBar = ({
           {error}
         </p>
       ) : (
-        <p className="text-xs text-muted">Window must be 15 minutes to 2 hours.</p>
+        <p className="text-xs text-muted">
+          Hourly historical simulation through June 2017. Not live traffic.
+          Window must be 1 to 2 hours.
+        </p>
       )}
     </form>
   )

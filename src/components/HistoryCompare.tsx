@@ -9,7 +9,7 @@ import {
   YAxis,
 } from 'recharts'
 import type { PredictionPoint } from '../types/traffic'
-import { formatClock } from '../utils/horizon'
+import { formatClock, hourKey } from '../utils/horizon'
 
 type HistoryCompareProps = {
   predicted: PredictionPoint[]
@@ -17,11 +17,18 @@ type HistoryCompareProps = {
 }
 
 export const HistoryCompare = ({ predicted, history }: HistoryCompareProps) => {
-  const data = predicted.map((point, index) => ({
-    label: formatClock(point.timestamp),
-    predicted: point.predicted,
-    actual: history[index]?.actual ?? history[index]?.predicted ?? 0,
-  }))
+  const historyByHour = new Map(
+    history.map((point) => [hourKey(point.timestamp), point]),
+  )
+  const data = predicted.map((point) => {
+    const matched = historyByHour.get(hourKey(point.timestamp))
+    const actual = point.actual ?? matched?.actual ?? matched?.predicted
+    return {
+      label: formatClock(point.timestamp),
+      predicted: point.predicted,
+      actual,
+    }
+  })
 
   return (
     <div data-testid="history-compare-chart" className="h-44 w-full">

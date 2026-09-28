@@ -1,0 +1,35 @@
+[
+  {
+    "Model": "LSTM",
+    "RMSE": 5.353706059207372,
+    "MAE": 3.3375426772872037,
+    "MAPE": 13.944579478869562,
+    "R2": 0.9632054868515635,
+    "training_duration_seconds": 6342.591185900004,
+    "best_epoch": 7,
+    "best_val_loss": 0.0013794747646898031,
+    "epochs_completed": 17
+  },
+  {
+    "Model": "GRU",
+    "RMSE": 5.101929702340707,
+    "MAE": 3.20728792561068,
+    "MAPE": 13.479095770771352,
+    "R2": 0.9665848853413808,
+    "training_duration_seconds": 4473.0950445,
+    "best_epoch": 8,
+    "best_val_loss": 0.0012964976485818624,
+    "epochs_completed": 18
+  },
+  {
+    "Model": "CNN-LSTM",
+    "RMSE": 5.187203117765898,
+    "MAE": 3.2746842188367813,
+    "MAPE": 13.359806828128656,
+    "R2": 0.9654585532803952,
+    "training_duration_seconds": 888.5241710000009,
+    "best_epoch": 6,
+    "best_val_loss": 0.0014260560274124146,
+    "epochs_completed": 16
+  }
+]

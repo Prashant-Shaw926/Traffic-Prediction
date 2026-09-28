@@ -1,0 +1,89 @@
+Deep-learning model comparison
+==============================
+
+This report reads existing evaluation artifacts. No models were retrained.
+ARIMA is not included. No composite score or overall ranking is assigned.
+
+1. Dataset / evaluation consistency
+-----------------------------------
+All three models used the same verified pipeline:
+
+- Test set: 7122 one-step-ahead windows (same timestamps and junctions)
+- Lookback: 168 hours
+- Features: 13 (hour, day_of_week, day, month, is_weekend, hour_sin,
+  hour_cos, Junction, vehicles_lag_1/2/3/24/168)
+- Scalers: existing train-only MinMax feature_scaler.joblib and
+  target_scaler.joblib (not refit for any of these experiments)
+- Target: Vehicles at timestamp T, original units after inverse scaling
+- Metrics: RMSE, MAE, MAPE (%), R2 via ml/evaluation/metrics.py
+- Train / validation / test sequence counts: 32543 / 7115 / 7122
+
+2. Overall results (test set, original Vehicles)
+------------------------------------------------
+Model     RMSE      MAE       MAPE       R2      
+--------  --------  --------  ---------  --------
+LSTM      5.353706  3.337543  13.944579  0.963205
+GRU       5.101930  3.207288  13.479096  0.966585
+CNN-LSTM  5.187203  3.274684  13.359807  0.965459
+
+RMSE, MAE, and MAPE are lower-is-better. R2 is higher-is-better.
+
+3. Per-junction comparison
+--------------------------
+Junction 1
+Model     RMSE      MAE       MAPE      R2      
+--------  --------  --------  --------  --------
+LSTM      7.003595  4.914151  7.222398  0.920204
+GRU       6.280628  4.345548  6.228208  0.935828
+CNN-LSTM  6.438626  4.479688  6.444150  0.932559
+
+Junction 2
+Model     RMSE      MAE       MAPE       R2      
+--------  --------  --------  ---------  --------
+LSTM      3.033363  2.395796  11.091726  0.876659
+GRU       3.305708  2.632728  11.885291  0.853517
+CNN-LSTM  3.299630  2.646410  12.011575  0.854055
+
+Junction 3
+Model     RMSE      MAE       MAPE       R2      
+--------  --------  --------  ---------  --------
+LSTM      5.779416  3.066814  19.187862  0.720052
+GRU       5.695265  2.958147  17.531228  0.728145
+CNN-LSTM  5.781418  3.024750  17.402105  0.719858
+
+Junction 4
+Model     RMSE      MAE       MAPE       R2      
+--------  --------  --------  ---------  --------
+LSTM      3.015805  2.080208  28.901910  0.535694
+GRU       3.119036  2.121130  30.027570  0.503363
+CNN-LSTM  3.078947  2.146277  27.936747  0.516048
+
+4. Factual metric observations (overall test set only)
+------------------------------------------------------
+- Lowest RMSE: GRU
+- Lowest MAE: GRU
+- Lowest MAPE: CNN-LSTM
+- Highest R2: GRU
+
+These are separate observations per metric. This report does not assign
+an overall ranking or a combined score.
+
+5. Scope
+--------
+These observations apply only to this experiment and this held-out test
+set. They should not be generalized to other datasets, cities, horizons,
+or future time periods.
+
+6. Training duration (from saved configs / histories)
+-----------------------------------------------------
+Model     Duration_s  Duration_min  Epochs  Best_epoch  Best_val_loss
+--------  ----------  ------------  ------  ----------  -------------
+LSTM      6342.6      105.71        17      7           0.001379     
+GRU       4473.1      74.55         18      8           0.001296     
+CNN-LSTM  888.5       14.81         16      6           0.001426     
+
+7. Retraining
+-------------
+No LSTM, GRU, or CNN-LSTM weights were loaded for training or updated.
+This script only read existing metric, config, and history files and
+wrote comparison outputs under results/.

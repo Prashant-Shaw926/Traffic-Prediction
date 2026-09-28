@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { mockTrafficApi } from './api/traffic'
+import { trafficApi } from './api/traffic'
 import { AppShell } from './components/AppShell'
 import { ForecastChart } from './components/ForecastChart'
 import { HistoryCompare } from './components/HistoryCompare'
@@ -33,7 +33,7 @@ const App = () => {
   useEffect(() => {
     let cancelled = false
 
-    mockTrafficApi
+    trafficApi
       .getLocations()
       .then((items) => {
         if (!cancelled) setLocations(items)
@@ -60,6 +60,7 @@ const App = () => {
   }, [result])
 
   const handlePredict = () => {
+    if (status === 'loading') return
     const validation = validateHorizon(start, end)
     if (!selectedLocationId) {
       setError('Select a junction.')
@@ -74,8 +75,8 @@ const App = () => {
     setStatus('loading')
 
     void Promise.all([
-      mockTrafficApi.predict({ locationId: selectedLocationId, start, end }),
-      mockTrafficApi.getHistory(selectedLocationId, start, end),
+      trafficApi.predict({ locationId: selectedLocationId, start, end }),
+      trafficApi.getHistory(selectedLocationId, start, end),
     ])
       .then(([prediction, historical]) => {
         setResult(prediction)
@@ -195,7 +196,8 @@ const Inspector = ({
         </p>
         <h2 className="mt-1 text-xl font-medium tracking-tight">{selected.name}</h2>
         <p className="mt-3 text-sm text-muted">
-          Set a 15 minute to 2 hour window, then predict.
+          Set a 1 to 2 hour historical window, then predict. Data ends 30 Jun
+          2017.
         </p>
       </div>
     )
@@ -208,6 +210,9 @@ const Inspector = ({
       </p>
       <h2 className="mt-1 text-xl font-medium tracking-tight">{selected.name}</h2>
       <p className="mt-1 text-sm text-muted">{formatRangeLabel(start, end)}</p>
+      <p className="mt-2 text-xs text-muted">
+        Prediction Model: {result.model ?? 'GRU'}
+      </p>
 
       <div className="mt-6 flex items-end justify-between gap-4">
         <div>
@@ -226,7 +231,7 @@ const Inspector = ({
             Peak volume
           </p>
           <p className="mt-1 font-mono text-lg tabular-nums">
-            {result.peakVolume}
+            {Number(result.peakVolume).toFixed(1)}
             <span className="ml-1 text-xs text-muted">veh</span>
           </p>
         </div>

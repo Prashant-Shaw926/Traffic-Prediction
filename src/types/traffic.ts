@@ -6,6 +6,7 @@ export type Junction = {
   area: string
   lat: number
   lng: number
+  junction?: number
 }
 
 export type PredictionPoint = {
@@ -28,6 +29,9 @@ export type PredictResponse = {
   points: PredictionPoint[]
   peakCongestion: CongestionLevel
   peakVolume: number
+  model?: string
+  junction?: number
+  predicted_vehicles?: number
 }
 
 export type TrafficApi = {

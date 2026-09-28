@@ -15,7 +15,7 @@ export const AppShell = ({ query, map, inspector }: AppShellProps) => {
             Traffic Prediction
           </h1>
           <p className="text-[11px] uppercase tracking-[0.16em] text-muted">
-            Mock data
+            Historical simulation
           </p>
         </div>
         <div className="min-w-0 flex-1">{query}</div>

@@ -1,6 +1,6 @@
 # Traffic prediction ML pipeline
 
-Independent of the React UI and of Flask. Inspection, preprocessing, and **full LSTM training** are implemented. GRU / CNN-LSTM / ARIMA are not trained yet.
+Inspection, preprocessing, **full LSTM**, **full GRU**, **full CNN-LSTM**, and model comparison are implemented. A Flask GRU inference API lives in `backend/` (not wired to React yet). ARIMA is not trained yet.
 
 ## Dataset
 
@@ -24,6 +24,11 @@ python -m ml.data.inspect_data
 python -m ml.data.preprocess
 python -m ml.training.train_lstm --smoke
 python -m ml.training.train_lstm
+python -m ml.training.train_gru
+python -m ml.training.train_cnn_lstm
+python -m ml.evaluation.compare_models
+pip install -r backend/requirements.txt
+python -m flask --app backend.app run --host 127.0.0.1 --port 5000
 ```
 
 If `data/raw/traffic.csv` is missing, that command exits with download instructions.
@@ -41,6 +46,12 @@ If `data/raw/traffic.csv` is missing, that command exits with download instructi
 | `ml/training/sequence_generator.py` | implemented |
 | `ml/models/lstm.py` | implemented |
 | `ml/training/train_lstm.py` | full training + `--smoke` |
+| `ml/models/gru.py` | implemented |
+| `ml/training/train_gru.py` | full training |
+| `ml/models/cnn_lstm.py` | implemented |
+| `ml/training/train_cnn_lstm.py` | full training |
 | `ml/evaluation/metrics.py` | implemented |
+| `ml/evaluation/compare_models.py` | LSTM / GRU / CNN-LSTM comparison (no retraining) |
 | `ml/inference/predictor.py` | implemented |
-| GRU, CNN-LSTM, ARIMA | not trained yet |
+| `backend/` | Flask GRU inference API |
+| ARIMA | not trained yet |
