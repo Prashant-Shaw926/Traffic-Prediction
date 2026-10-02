@@ -1,0 +1,333 @@
+{
+  "evaluation_period": {
+    "Test_Start": "2017-06-04 21:00:00",
+    "Test_End": "2017-06-30 23:00:00",
+    "Test_Rows": 2508
+  },
+  "feature_groups": [
+    {
+      "Experiment": "Baseline",
+      "Feature_Group": "temporal_plus_own_lags",
+      "Feature_Count": 13,
+      "frozen": true
+    },
+    {
+      "Experiment": "Network",
+      "Feature_Group": "baseline_plus_network_lags",
+      "Feature_Count": 23,
+      "frozen": false
+    },
+    {
+      "Experiment": "Cross_Junction",
+      "Feature_Group": "baseline_plus_cross_junction_lags",
+      "Feature_Count": 43,
+      "frozen": false
+    },
+    {
+      "Experiment": "Full_Spatial",
+      "Feature_Group": "baseline_plus_network_and_cross_junction_lags",
+      "Feature_Count": 53,
+      "frozen": true
+    }
+  ],
+  "overall": [
+    {
+      "Experiment": "Baseline",
+      "Feature_Group": "temporal_plus_own_lags",
+      "Feature_Count": 13,
+      "RMSE": 5.82048940742753,
+      "MAE": 3.315427364354067,
+      "MAPE": 16.212426237409908,
+      "R2": 0.9623013903324089,
+      "Test_Start": "2017-06-04 21:00:00",
+      "Test_End": "2017-06-30 23:00:00",
+      "Test_Rows": 2508
+    },
+    {
+      "Experiment": "Network",
+      "Feature_Group": "baseline_plus_network_lags",
+      "Feature_Count": 23,
+      "RMSE": 5.367861557971085,
+      "MAE": 2.9094679589314194,
+      "MAPE": 16.03387628708991,
+      "R2": 0.9679366467246369,
+      "Test_Start": "2017-06-04 21:00:00",
+      "Test_End": "2017-06-30 23:00:00",
+      "Test_Rows": 2508
+    },
+    {
+      "Experiment": "Cross_Junction",
+      "Feature_Group": "baseline_plus_cross_junction_lags",
+      "Feature_Count": 43,
+      "RMSE": 5.848572088050686,
+      "MAE": 3.100085949601276,
+      "MAPE": 15.694753458347618,
+      "R2": 0.9619367364711011,
+      "Test_Start": "2017-06-04 21:00:00",
+      "Test_End": "2017-06-30 23:00:00",
+      "Test_Rows": 2508
+    },
+    {
+      "Experiment": "Full_Spatial",
+      "Feature_Group": "baseline_plus_network_and_cross_junction_lags",
+      "Feature_Count": 53,
+      "RMSE": 5.2790376463388995,
+      "MAE": 2.8756653915869217,
+      "MAPE": 15.055771407495211,
+      "R2": 0.9689889946870859,
+      "Test_Start": "2017-06-04 21:00:00",
+      "Test_End": "2017-06-30 23:00:00",
+      "Test_Rows": 2508
+    }
+  ],
+  "per_junction": {
+    "Baseline": {
+      "Overall": {
+        "RMSE": 5.82048940742753,
+        "MAE": 3.315427364354067,
+        "MAPE": 16.212426237409908,
+        "R2": 0.9623013903324089
+      },
+      "1": {
+        "RMSE": 7.346069120090745,
+        "MAE": 5.214402548644338,
+        "MAPE": 6.583656900231952,
+        "R2": 0.9283048378798824
+      },
+      "2": {
+        "RMSE": 3.526900695342637,
+        "MAE": 2.823677106858054,
+        "MAPE": 12.059217405822041,
+        "R2": 0.872143402636368
+      },
+      "3": {
+        "RMSE": 7.705857744168288,
+        "MAE": 3.1024999854864435,
+        "MAPE": 16.17926053357556,
+        "R2": 0.576707401632748
+      },
+      "4": {
+        "RMSE": 3.1190357744961426,
+        "MAE": 2.121129816427432,
+        "MAPE": 30.02757011001008,
+        "R2": 0.5033634473640973
+      }
+    },
+    "Network": {
+      "Overall": {
+        "RMSE": 5.367861557971085,
+        "MAE": 2.9094679589314194,
+        "MAPE": 16.03387628708991,
+        "R2": 0.9679366467246369
+      },
+      "1": {
+        "RMSE": 4.602089629613411,
+        "MAE": 3.413878454545454,
+        "MAPE": 4.781416908807453,
+        "R2": 0.9718622105381609
+      },
+      "2": {
+        "RMSE": 3.090539947955625,
+        "MAE": 2.4590255462519934,
+        "MAPE": 11.451143122185957,
+        "R2": 0.9018239844837298
+      },
+      "3": {
+        "RMSE": 8.48185089517419,
+        "MAE": 3.2224907046251996,
+        "MAPE": 17.271816458216914,
+        "R2": 0.4871622725294372
+      },
+      "4": {
+        "RMSE": 3.5472933463843925,
+        "MAE": 2.5424771303030305,
+        "MAPE": 30.63112865914932,
+        "R2": 0.35761975428397075
+      }
+    },
+    "Cross_Junction": {
+      "Overall": {
+        "RMSE": 5.848572088050686,
+        "MAE": 3.100085949601276,
+        "MAPE": 15.694753458347618,
+        "R2": 0.9619367364711011
+      },
+      "1": {
+        "RMSE": 4.957260944027368,
+        "MAE": 3.6673045247208935,
+        "MAPE": 5.067231649891196,
+        "R2": 0.9673514881235549
+      },
+      "2": {
+        "RMSE": 3.6155555308940954,
+        "MAE": 2.842590725677831,
+        "MAPE": 11.403007581982276,
+        "R2": 0.8656348159274143
+      },
+      "3": {
+        "RMSE": 9.293790014511018,
+        "MAE": 3.5015725189792666,
+        "MAPE": 16.801891860918776,
+        "R2": 0.3842783687672343
+      },
+      "4": {
+        "RMSE": 3.5779842339674377,
+        "MAE": 2.3888760290271134,
+        "MAPE": 29.50688274059823,
+        "R2": 0.3464560273539221
+      }
+    },
+    "Full_Spatial": {
+      "Overall": {
+        "RMSE": 5.2790376463388995,
+        "MAE": 2.8756653915869217,
+        "MAPE": 15.055771407495211,
+        "R2": 0.9689889946870859
+      },
+      "1": {
+        "RMSE": 5.044641932566302,
+        "MAE": 3.608760451355662,
+        "MAPE": 4.85409480828474,
+        "R2": 0.966190361944221
+      },
+      "2": {
+        "RMSE": 2.868086841013499,
+        "MAE": 2.3052244489633176,
+        "MAPE": 9.693200520672447,
+        "R2": 0.9154485085261757
+      },
+      "3": {
+        "RMSE": 8.191619241834205,
+        "MAE": 3.3514587877192987,
+        "MAPE": 17.220549061484526,
+        "R2": 0.5216583307138736
+      },
+      "4": {
+        "RMSE": 3.270473012771079,
+        "MAE": 2.23721787830941,
+        "MAPE": 28.455241239539138,
+        "R2": 0.45396672633956225
+      }
+    }
+  },
+  "absolute_differences_vs_baseline": {
+    "Baseline": {
+      "RMSE": 0.0,
+      "MAE": 0.0,
+      "MAPE": 0.0,
+      "R2": 0.0
+    },
+    "Network": {
+      "RMSE": -0.4526278494564453,
+      "MAE": -0.40595940542264763,
+      "MAPE": -0.1785499503199972,
+      "R2": 0.00563525639222795
+    },
+    "Cross_Junction": {
+      "RMSE": 0.028082680623155554,
+      "MAE": -0.21534141475279123,
+      "MAPE": -0.5176727790622895,
+      "R2": -0.0003646538613077954
+    },
+    "Full_Spatial": {
+      "RMSE": -0.5414517610886307,
+      "MAE": -0.43976197276714535,
+      "MAPE": -1.1566548299146966,
+      "R2": 0.006687604354676968
+    }
+  },
+  "percentage_change_vs_baseline": {
+    "Baseline": {
+      "RMSE": 0.0,
+      "MAE": 0.0,
+      "MAPE": 0.0,
+      "R2": 0.0
+    },
+    "Network": {
+      "RMSE": -7.776456888296139,
+      "MAE": -12.24455736196589,
+      "MAPE": -1.1013154213031737,
+      "R2": 0.5856020212421553
+    },
+    "Cross_Junction": {
+      "RMSE": 0.4824797136013894,
+      "MAE": -6.495132937250925,
+      "MAPE": -3.193061738456938,
+      "R2": -0.03789393478708709
+    },
+    "Full_Spatial": {
+      "RMSE": -9.30251260998231,
+      "MAE": -13.26411121218524,
+      "MAPE": -7.13437219683834,
+      "R2": 0.694959440136199
+    }
+  },
+  "no_ranking": true,
+  "checks": [
+    {
+      "name": "Baseline_finite",
+      "passed": true,
+      "detail": "nan=0 inf=0"
+    },
+    {
+      "name": "Baseline_keys_aligned",
+      "passed": true,
+      "detail": "joined on DateTime+Junction"
+    },
+    {
+      "name": "Network_finite",
+      "passed": true,
+      "detail": "nan=0 inf=0"
+    },
+    {
+      "name": "Network_keys_aligned",
+      "passed": true,
+      "detail": "joined on DateTime+Junction"
+    },
+    {
+      "name": "Cross_Junction_finite",
+      "passed": true,
+      "detail": "nan=0 inf=0"
+    },
+    {
+      "name": "Cross_Junction_keys_aligned",
+      "passed": true,
+      "detail": "joined on DateTime+Junction"
+    },
+    {
+      "name": "Full_Spatial_finite",
+      "passed": true,
+      "detail": "nan=0 inf=0"
+    },
+    {
+      "name": "Full_Spatial_keys_aligned",
+      "passed": true,
+      "detail": "joined on DateTime+Junction"
+    },
+    {
+      "name": "identical_target_keys",
+      "passed": true,
+      "detail": "n=2508 2017-06-04 21:00:00 -> 2017-06-30 23:00:00"
+    },
+    {
+      "name": "no_duplicate_keys",
+      "passed": true,
+      "detail": "dups=0"
+    },
+    {
+      "name": "frozen_artifacts_unchanged",
+      "passed": true,
+      "detail": "baseline/spatial models, scalers, and existing comparison files unchanged"
+    },
+    {
+      "name": "a_and_d_not_retrained",
+      "passed": true,
+      "detail": "Baseline and Full_Spatial predictions were read, not regenerated"
+    },
+    {
+      "name": "no_ranking",
+      "passed": true,
+      "detail": "no composite score or winner assigned"
+    }
+  ]
+}

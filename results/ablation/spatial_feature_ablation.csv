@@ -1,0 +1,5 @@
+Experiment,Feature_Group,Feature_Count,RMSE,MAE,MAPE,R2,Test_Start,Test_End,Test_Rows
+Baseline,temporal_plus_own_lags,13,5.820489,3.315427,16.212426,0.962301,2017-06-04 21:00:00,2017-06-30 23:00:00,2508
+Network,baseline_plus_network_lags,23,5.367862,2.909468,16.033876,0.967937,2017-06-04 21:00:00,2017-06-30 23:00:00,2508
+Cross_Junction,baseline_plus_cross_junction_lags,43,5.848572,3.100086,15.694753,0.961937,2017-06-04 21:00:00,2017-06-30 23:00:00,2508
+Full_Spatial,baseline_plus_network_and_cross_junction_lags,53,5.279038,2.875665,15.055771,0.968989,2017-06-04 21:00:00,2017-06-30 23:00:00,2508

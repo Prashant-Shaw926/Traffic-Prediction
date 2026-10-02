@@ -8,14 +8,18 @@ import type {
 } from '../types/traffic'
 
 const DEFAULT_API_BASE = '/api'
-const INSUFFICIENT_HISTORY =
-  'Insufficient historical data for the requested prediction timestamp.'
-const INSUFFICIENT_USER =
-  'Prediction unavailable for this time because sufficient historical data is not available.'
 
 export const API_BASE_URL = (
   import.meta.env.VITE_API_BASE_URL ?? DEFAULT_API_BASE
 ).replace(/\/$/, '')
+
+function toUserMessage(status: number, serverMessage: string | null): string {
+  if (status === 400) return serverMessage ?? 'Invalid request.'
+  if (status === 500 || status === 503) {
+    return serverMessage ?? 'Prediction failed.'
+  }
+  return serverMessage ?? `Request failed (${status}).`
+}
 
 type LocationsResponse = {
   locations?: Junction[]
@@ -46,15 +50,6 @@ function messageFromBody(body: unknown): string | null {
   if (!body || typeof body !== 'object') return null
   const error = (body as { error?: unknown }).error
   return typeof error === 'string' && error.trim() ? error : null
-}
-
-function toUserMessage(status: number, serverMessage: string | null): string {
-  if (serverMessage === INSUFFICIENT_HISTORY) return INSUFFICIENT_USER
-  if (status === 400) return serverMessage ?? 'Invalid request.'
-  if (status === 500 || status === 503) {
-    return serverMessage ?? 'Prediction failed.'
-  }
-  return serverMessage ?? `Request failed (${status}).`
 }
 
 async function readJson(response: Response): Promise<unknown> {
@@ -89,14 +84,79 @@ async function requestJson(path: string, init?: RequestInit): Promise<unknown> {
   return body
 }
 
+type RawPredictPoint = {
+  timestamp?: string
+  datetime?: string
+  predicted?: number
+  actual?: number | null
+  congestion?: CongestionLevel
+}
+
+function finiteNumber(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined
+}
+
+function mapPredictPoint(item: RawPredictPoint): PredictionPoint {
+  const timestamp = item.timestamp ?? item.datetime ?? ''
+  const predicted = finiteNumber(item.predicted)
+  if (!timestamp || predicted === undefined) {
+    throw new Error('Prediction failed.')
+  }
+  const actual = finiteNumber(item.actual)
+  return {
+    timestamp,
+    predicted,
+    actual,
+    congestion: isCongestion(item.congestion) ? item.congestion : 'clear',
+  }
+}
+
+function parsePredictResponse(body: unknown): PredictResponse {
+  if (!body || typeof body !== 'object') {
+    throw new Error('Prediction failed.')
+  }
+  const raw = body as Record<string, unknown>
+  if (!Array.isArray(raw.points)) {
+    throw new Error('Prediction failed.')
+  }
+  if (typeof raw.model !== 'string' || raw.model.trim() === '') {
+    throw new Error('Prediction failed.')
+  }
+  if (typeof raw.features !== 'number' || typeof raw.lookback !== 'number') {
+    throw new Error('Prediction failed.')
+  }
+  if (typeof raw.historical_simulation !== 'boolean') {
+    throw new Error('Prediction failed.')
+  }
+  const peakCongestion = raw.peakCongestion
+  if (!isCongestion(peakCongestion)) {
+    throw new Error('Prediction failed.')
+  }
+  return {
+    locationId: String(raw.locationId ?? ''),
+    start: String(raw.start ?? ''),
+    end: String(raw.end ?? ''),
+    points: raw.points.map((point) => mapPredictPoint(point as RawPredictPoint)),
+    peakCongestion,
+    peakVolume: finiteNumber(raw.peakVolume) ?? 0,
+    model: raw.model,
+    features: raw.features,
+    lookback: raw.lookback,
+    historical_simulation: raw.historical_simulation,
+    junction: finiteNumber(raw.junction),
+    predicted_vehicles: finiteNumber(raw.predicted_vehicles),
+  }
+}
+
 function mapHistoryPoint(item: HistoryItem): PredictionPoint {
   const timestamp = item.timestamp ?? item.datetime ?? ''
   const actual = item.actual ?? item.vehicles
   const congestion = isCongestion(item.congestion) ? item.congestion : 'clear'
+  const actualValue = typeof actual === 'number' && Number.isFinite(actual) ? actual : undefined
   return {
     timestamp,
-    predicted: typeof actual === 'number' ? actual : 0,
-    actual: typeof actual === 'number' ? actual : undefined,
+    predicted: actualValue ?? 0,
+    actual: actualValue,
     congestion,
   }
 }
@@ -119,7 +179,7 @@ export const trafficApi: TrafficApi = {
   },
 
   async predict(request: PredictRequest): Promise<PredictResponse> {
-    const body = (await requestJson('/predict', {
+    const body = await requestJson('/predict', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -127,12 +187,8 @@ export const trafficApi: TrafficApi = {
         start: toHourPayload(request.start),
         end: toHourPayload(request.end),
       }),
-    })) as PredictResponse
-
-    if (!body || !Array.isArray(body.points)) {
-      throw new Error('Prediction failed.')
-    }
-    return body
+    })
+    return parsePredictResponse(body)
   },
 
   async getHistory(locationId, start, end) {

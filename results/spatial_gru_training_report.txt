@@ -1,0 +1,76 @@
+Spatial GRU training report
+
+This experiment is separate from the baseline GRU.
+No claim is made that Spatial GRU is better than baseline GRU.
+Baseline GRU was evaluated on the 2015-2017 full series.
+Spatial GRU uses the 2017-01-08 onward four-junction overlap period.
+Metrics are not comparable until both models are scored on the same timestamps.
+
+== Architecture ==
+Input(168, 53)
+GRU(128, return_sequences=True)
+Dropout(0.2)
+GRU(64)
+Dense(32, activation=relu)
+Dense(1, activation=linear)
+parameter_count=109633
+feature_count=53
+lookback=168
+
+== Training configuration ==
+optimizer=Adam
+learning_rate=0.001
+loss=MSE
+batch_size=32
+max_epochs=100
+early_stopping_patience=10
+restore_best_weights=True
+seed=42
+train_shuffle=True
+target=Vehicles
+scalers=models/artifacts/spatial (not refit)
+
+== Sequence shapes ==
+X_train=(11024, 168, 53) y_train=(11024,)
+X_val=(2504, 168, 53) y_val=(2504,)
+X_test=(2508, 168, 53) y_test=(2508,)
+per_junction={'1': {'train': 2756, 'validation': 626, 'test': 627}, '2': {'train': 2756, 'validation': 626, 'test': 627}, '3': {'train': 2756, 'validation': 626, 'test': 627}, '4': {'train': 2756, 'validation': 626, 'test': 627}}
+
+== Training ==
+duration_seconds=2072.9
+duration_minutes=34.55
+epochs_completed=28
+best_epoch=18
+best_val_loss=0.000379
+final_train_loss=0.000523
+final_val_loss=0.000541
+
+== Overall test (original Vehicles) ==
+RMSE=5.2790
+MAE=2.8757
+MAPE=15.0558%
+R2=0.9690
+
+== Per-junction test (original Vehicles) ==
+Junction 1: RMSE=5.0446 MAE=3.6088 MAPE=4.8541% R2=0.9662
+Junction 2: RMSE=2.8681 MAE=2.3052 MAPE=9.6932% R2=0.9154
+Junction 3: RMSE=8.1916 MAE=3.3515 MAPE=17.2205% R2=0.5217
+Junction 4: RMSE=3.2705 MAE=2.2372 MAPE=28.4552% R2=0.4540
+
+== Sanity checks ==
+PASS  no_nan_predictions: nan=0 inf=0
+PASS  no_infinite_predictions: finite=2508/2508
+PASS  equal_lengths: actual=2508 predicted=2508 meta=2508 pred_rows=2508
+PASS  datetime_alignment: prediction DateTime matches test sequence metadata
+PASS  junction_alignment: junctions=[1, 2, 3, 4]
+PASS  test_targets_not_in_training: fit() received only X_train/y_train and X_val/y_val
+PASS  val_targets_not_in_training_labels: y_train does not include validation targets
+PASS  spatial_feature_scaler_unchanged: feature=9438633af0d1
+PASS  spatial_target_scaler_unchanged: target=9b8f13e0a5a4
+PASS  predictions_original_units: median_actual=21.00 (scaled targets would sit near 0-1)
+PASS  reloaded_model_matches: max_abs_diff=0
+PASS  baseline_artifacts_untouched: baseline GRU model/metrics/predictions and baseline scalers unchanged
+PASS  spatial_feature_count: n_features=53
+ALL CHECKS PASSED
+
+Command: python -m ml.training.train_spatial_gru

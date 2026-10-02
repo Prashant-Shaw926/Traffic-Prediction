@@ -10,13 +10,13 @@ import numpy as np
 import pandas as pd
 
 from backend.config import (
+    BASELINE_MODEL_NAME,
     FEATURE_SCALER_PATH,
     GRU_MODEL_PATH,
     INSUFFICIENT_HISTORY,
     LOCATION_BY_ID,
     LOCATION_BY_JUNCTION,
     LOOKBACK,
-    MODEL_NAME,
     TARGET_SCALER_PATH,
 )
 from backend.utils.responses import ApiError, congestion_from_volume, isoformat
@@ -220,7 +220,7 @@ def predict_request(payload: dict[str, Any]) -> dict[str, Any]:
         "start": isoformat(start),
         "end": isoformat(end),
         "predicted_vehicles": points[0]["predicted"],
-        "model": MODEL_NAME,
+        "model": BASELINE_MODEL_NAME,
         "points": points,
         "peakCongestion": peak_point["congestion"],
         "peakVolume": peak_point["predicted"],

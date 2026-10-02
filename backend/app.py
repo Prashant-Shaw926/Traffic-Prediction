@@ -19,6 +19,7 @@ from flask_cors import CORS
 from backend.config import CORS_ORIGINS, HOST, MODEL_NAME, PORT
 from backend.routes.traffic import traffic_bp
 from backend.services.prediction_service import load_artifacts
+from backend.services.spatial_prediction_service import load_spatial_artifacts
 from backend.utils.responses import ApiError, json_error
 
 logger = logging.getLogger(__name__)
@@ -49,6 +50,7 @@ def create_app() -> Flask:
     with app.app_context():
         try:
             load_artifacts()
+            load_spatial_artifacts()
         except Exception:
             logger.exception("Failed to load GRU artifacts")
             raise

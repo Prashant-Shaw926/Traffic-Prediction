@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from pathlib import Path
+from typing import Any, Sequence
 
 import joblib
 import numpy as np
@@ -34,11 +35,12 @@ class SequenceBundle:
     n_features: int
 
 
-def load_processed_frame() -> pd.DataFrame:
+def load_processed_frame(processed_dir: Path | None = None) -> pd.DataFrame:
     """Concat train/val/test so val/test windows can use earlier context."""
+    source = PROCESSED_DIR if processed_dir is None else Path(processed_dir)
     frames = []
     for name in ("train", "validation", "test"):
-        path = PROCESSED_DIR / f"{name}.csv"
+        path = source / f"{name}.csv"
         part = pd.read_csv(path, parse_dates=["DateTime"])
         if "split" not in part.columns:
             part["split"] = "validation" if name == "validation" else name
@@ -47,10 +49,11 @@ def load_processed_frame() -> pd.DataFrame:
     return df.sort_values(["Junction", "DateTime"]).reset_index(drop=True)
 
 
-def load_scalers() -> tuple[Any, Any]:
+def load_scalers(artifacts_dir: Path | None = None) -> tuple[Any, Any]:
     """Load scalers fitted on training data only. Never refit."""
-    feature_scaler = joblib.load(ARTIFACTS_DIR / "feature_scaler.joblib")
-    target_scaler = joblib.load(ARTIFACTS_DIR / "target_scaler.joblib")
+    source = ARTIFACTS_DIR if artifacts_dir is None else Path(artifacts_dir)
+    feature_scaler = joblib.load(source / "feature_scaler.joblib")
+    target_scaler = joblib.load(source / "target_scaler.joblib")
     return feature_scaler, target_scaler
 
 
@@ -75,6 +78,8 @@ def _windows_for_junction(
     lookback: int,
     feature_scaler: Any,
     target_scaler: Any,
+    feature_columns: Sequence[str] | None = None,
+    n_features: int | None = None,
 ) -> tuple[np.ndarray, np.ndarray, pd.DataFrame]:
     group = group.sort_values("DateTime").reset_index(drop=True)
     if group["Junction"].nunique() != 1:
@@ -82,22 +87,29 @@ def _windows_for_junction(
     if not group["DateTime"].is_monotonic_increasing:
         raise AssertionError("Junction series is not sorted by DateTime")
 
-    features = np.asarray(feature_scaler.transform(group[FEATURE_COLUMNS]))
-    target = np.asarray(target_scaler.transform(group[[TARGET_COLUMN]])).ravel()
-    if features.shape[1] != N_FEATURES:
+    columns = list(FEATURE_COLUMNS if feature_columns is None else feature_columns)
+    width = N_FEATURES if n_features is None else int(n_features)
+    if len(columns) != width:
         raise AssertionError(
-            f"Expected {N_FEATURES} features, got {features.shape[1]}"
+            f"feature_columns length {len(columns)} does not match n_features {width}"
+        )
+
+    features = np.asarray(feature_scaler.transform(group[columns]))
+    target = np.asarray(target_scaler.transform(group[[TARGET_COLUMN]])).ravel()
+    if features.shape[1] != width:
+        raise AssertionError(
+            f"Expected {width} features, got {features.shape[1]}"
         )
     if len(group) < lookback:
         empty_meta = pd.DataFrame(columns=["DateTime", "Junction", "split"])
         return (
-            np.empty((0, lookback, N_FEATURES), dtype=np.float32),
+            np.empty((0, lookback, width), dtype=np.float32),
             np.empty((0,), dtype=np.float32),
             empty_meta,
         )
 
     # windows[i] = rows [i, i+lookback); target is the last row of the window (T)
-    X = sliding_window_view(features, (lookback, N_FEATURES))[:, 0, :, :].copy()
+    X = sliding_window_view(features, (lookback, width))[:, 0, :, :].copy()
     y = target[lookback - 1 :]
     meta = group.iloc[lookback - 1 :][["DateTime", "Junction", "split"]].reset_index(
         drop=True
@@ -128,6 +140,11 @@ def _split_bundle(
 def build_sequences(
     lookback: int = LOOKBACK,
     junctions: list[int] | None = None,
+    *,
+    processed_dir: Path | None = None,
+    artifacts_dir: Path | None = None,
+    feature_columns: Sequence[str] | None = None,
+    n_features: int | None = None,
 ) -> SequenceBundle:
     """
     Build (samples, lookback, features) tensors.
@@ -135,10 +152,19 @@ def build_sequences(
     Each sample predicts Vehicles(T) from feature rows T-lookback+1 ... T.
     Features at T include vehicles_lag_1 = Vehicles(T-1), never Vehicles(T).
     Sample split is the split of T. Earlier rows may come from a previous split.
+    Optional processed_dir / artifacts_dir / feature_columns / n_features default to
+    the baseline 13-feature pipeline.
     """
-    df = load_processed_frame()
+    width = N_FEATURES if n_features is None else int(n_features)
+    columns = list(FEATURE_COLUMNS if feature_columns is None else feature_columns)
+    if len(columns) != width:
+        raise AssertionError(
+            f"feature_columns length {len(columns)} does not match n_features {width}"
+        )
+
+    df = load_processed_frame(processed_dir=processed_dir)
     verify_split_order(df)
-    feature_scaler, target_scaler = load_scalers()
+    feature_scaler, target_scaler = load_scalers(artifacts_dir=artifacts_dir)
 
     xs_train, ys_train, ms_train = [], [], []
     xs_val, ys_val, ms_val = [], [], []
@@ -153,7 +179,12 @@ def build_sequences(
         if int(junction) not in set(int(j) for j in selected):
             continue
         X, y, meta = _windows_for_junction(
-            group, lookback, feature_scaler, target_scaler
+            group,
+            lookback,
+            feature_scaler,
+            target_scaler,
+            feature_columns=columns,
+            n_features=width,
         )
         parts = _split_bundle(X, y, meta)
         per_junction[str(int(junction))] = {
@@ -177,7 +208,7 @@ def build_sequences(
         ms: list[pd.DataFrame],
     ) -> tuple[np.ndarray, np.ndarray, pd.DataFrame]:
         if not xs:
-            empty_x = np.empty((0, lookback, N_FEATURES), dtype=np.float32)
+            empty_x = np.empty((0, lookback, width), dtype=np.float32)
             empty_y = np.empty((0,), dtype=np.float32)
             empty_m = pd.DataFrame(columns=["DateTime", "Junction", "split"])
             return empty_x, empty_y, empty_m
@@ -189,7 +220,7 @@ def build_sequences(
 
     counts = {
         "lookback": lookback,
-        "n_features": N_FEATURES,
+        "n_features": width,
         "per_junction": per_junction,
         "train": int(len(y_train)),
         "validation": int(len(y_val)),
@@ -212,7 +243,7 @@ def build_sequences(
         meta_test=meta_test,
         counts=counts,
         lookback=lookback,
-        n_features=N_FEATURES,
+        n_features=width,
     )
 
 

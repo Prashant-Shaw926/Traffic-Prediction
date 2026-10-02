@@ -211,7 +211,15 @@ const Inspector = ({
       <h2 className="mt-1 text-xl font-medium tracking-tight">{selected.name}</h2>
       <p className="mt-1 text-sm text-muted">{formatRangeLabel(start, end)}</p>
       <p className="mt-2 text-xs text-muted">
-        Prediction Model: {result.model ?? 'GRU'}
+        Prediction Model: {result.model.replaceAll('_', ' ')}
+      </p>
+      <p className="mt-1 text-xs text-muted">Features: {result.features}</p>
+      <p className="mt-1 text-xs text-muted">Lookback: {result.lookback} hours</p>
+      <p className="mt-1 text-xs text-muted">
+        Mode:{' '}
+        {result.historical_simulation
+          ? 'Historical simulation'
+          : 'Not a historical simulation'}
       </p>
 
       <div className="mt-6 flex items-end justify-between gap-4">

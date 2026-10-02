@@ -1,0 +1,25 @@
+Spatial ablation preprocessing
+
+Eligible rows match the spatial experiment (overlap + lag_168 drop on all spatial lags).
+Each ablation experiment keeps a feature subset and fits a new train-only MinMax scaler.
+Contemporaneous network/cross-junction values at T are not features.
+No 0/mean/interpolation fill. Baseline and full Spatial GRU artifacts were not written.
+
+eligible_rows=16704 train=11692 validation=2504 test=2508
+spatial_test_keys=2508
+test_start=2017-06-04 21:00:00 test_end=2017-06-30 23:00:00
+
+Junction 1 test 2017-06-04 21:00:00 -> 2017-06-30 23:00:00 n=627
+Junction 2 test 2017-06-04 21:00:00 -> 2017-06-30 23:00:00 n=627
+Junction 3 test 2017-06-04 21:00:00 -> 2017-06-30 23:00:00 n=627
+Junction 4 test 2017-06-04 21:00:00 -> 2017-06-30 23:00:00 n=627
+
+network: n_features=23 test_rows=2508 2017-06-04 21:00:00 -> 2017-06-30 23:00:00
+  D:\College project\traffic-prediction\data\processed\ablation\network
+  D:\College project\traffic-prediction\models\artifacts\ablation\network
+cross_junction: n_features=43 test_rows=2508 2017-06-04 21:00:00 -> 2017-06-30 23:00:00
+  D:\College project\traffic-prediction\data\processed\ablation\cross_junction
+  D:\College project\traffic-prediction\models\artifacts\ablation\cross_junction
+
+Same-test-set keys: PASS
+Frozen artifacts unchanged: PASS

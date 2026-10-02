@@ -1,0 +1,71 @@
+Same-test-period comparison: Baseline GRU vs Spatial GRU
+
+This is an evaluation-only experiment. Neither model was retrained.
+No overall ranking or composite score is assigned.
+
+== Evaluation period ==
+Test_Start=2017-06-04 21:00:00
+Test_End=2017-06-30 23:00:00
+Test_Rows=2508
+
+== Feature counts ==
+Baseline feature count=13
+Spatial feature count=53
+lookback=168
+Baseline matched input shape=(2508, 168, 13)
+Spatial test input shape=(2508, 168, 53) (from Spatial GRU training; not regenerated)
+
+== Same-test-set verification ==
+PASS  identical_datetime_junction_keys: spatial_rows=2508 baseline_rows=2508
+PASS  identical_actual_values: comparison-ready Actual reused as the shared target
+PASS  actual_matches_baseline_vehicles: max_abs_diff_vs_baseline_inverse_y=1.52588e-05
+PASS  no_duplicate_keys: spatial_dups=0 baseline_dups=0
+PASS  same_row_count: spatial=2508 baseline=2508 expected=2508
+PASS  same_evaluation_period: start=2017-06-04 21:00:00 end=2017-06-30 23:00:00
+PASS  no_nan_predictions: baseline_nan=0 spatial_nan=0
+PASS  no_inf_predictions: baseline_finite=2508 spatial_finite=2508
+PASS  baseline_not_retrained: fit() was not called
+PASS  spatial_not_retrained: Spatial GRU weights were not loaded for prediction
+PASS  protected_hashes_unchanged: baseline/spatial models, scalers, and frozen result files unchanged
+PASS  baseline_input_shape: shape=(2508, 168, 13) n_features=13
+ALL CHECKS PASSED
+
+== Overall metrics (original Vehicles) ==
+Baseline_GRU  RMSE=5.8205  MAE=3.3154  MAPE=16.2124%  R2=0.9623
+Spatial_GRU   RMSE=5.2790  MAE=2.8757  MAPE=15.0558%  R2=0.9690
+
+== Per-junction metrics ==
+Junction 1
+  Baseline_GRU  RMSE=7.3461  MAE=5.2144  MAPE=6.5837%  R2=0.9283
+  Spatial_GRU   RMSE=5.0446  MAE=3.6088  MAPE=4.8541%  R2=0.9662
+Junction 2
+  Baseline_GRU  RMSE=3.5269  MAE=2.8237  MAPE=12.0592%  R2=0.8721
+  Spatial_GRU   RMSE=2.8681  MAE=2.3052  MAPE=9.6932%  R2=0.9154
+Junction 3
+  Baseline_GRU  RMSE=7.7059  MAE=3.1025  MAPE=16.1793%  R2=0.5767
+  Spatial_GRU   RMSE=8.1916  MAE=3.3515  MAPE=17.2205%  R2=0.5217
+Junction 4
+  Baseline_GRU  RMSE=3.1190  MAE=2.1211  MAPE=30.0276%  R2=0.5034
+  Spatial_GRU   RMSE=3.2705  MAE=2.2372  MAPE=28.4552%  R2=0.4540
+
+== Absolute metric differences (Spatial - Baseline) ==
+RMSE_diff=-0.541452
+MAE_diff=-0.439762
+MAPE_diff=-1.156655
+R2_diff=0.006688
+
+== Percentage change ((Spatial - Baseline) / |Baseline| * 100) ==
+RMSE_pct_change=-9.3025%
+MAE_pct_change=-13.2641%
+MAPE_pct_change=-7.1344%
+R2_pct_change=0.6950%
+
+== Factual observations ==
+Spatial GRU RMSE was 5.2790 compared with baseline GRU RMSE 5.8205 on the same test set.
+Spatial GRU MAE was 2.8757 compared with baseline GRU MAE 3.3154.
+Spatial GRU MAPE was 15.0558% compared with baseline GRU MAPE 16.2124%.
+Spatial GRU R2 was 0.9690 compared with baseline GRU R2 0.9623.
+These statements are not a ranking. Lower RMSE/MAE/MAPE and higher R2 are better individually.
+Existing results/model_comparison.csv was not updated.
+
+Command: python -m ml.evaluation.compare_spatial_vs_baseline_gru

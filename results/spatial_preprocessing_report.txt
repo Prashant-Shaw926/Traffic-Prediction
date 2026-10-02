@@ -1,0 +1,69 @@
+Spatial/network preprocessing report
+
+This experiment is separate from the baseline LSTM/GRU/CNN-LSTM pipeline.
+No models were trained. Baseline processed CSVs and scalers were not written.
+
+== Counts ==
+original_rows=48120
+invalid_timestamps=0
+duplicate_keys=0
+rows_after_feature_build=48120
+four_junction_overlap_hours=4344
+rows_dropped_outside_overlap=30744
+rows_dropped_lag_nan=672
+final_rows=16704
+train_rows=11692  validation_rows=2504  test_rows=2508
+n_features=53
+
+== Lag NaN drops per Junction (after overlap filter) ==
+  Junction 1: dropped=168
+  Junction 2: dropped=168
+  Junction 3: dropped=168
+  Junction 4: dropped=168
+
+== Features ==
+hour, day_of_week, day, month, is_weekend, hour_sin, hour_cos, Junction, vehicles_lag_1, vehicles_lag_2, vehicles_lag_3, vehicles_lag_24, vehicles_lag_168, network_total_traffic_lag_1, network_total_traffic_lag_2, network_total_traffic_lag_3, network_total_traffic_lag_24, network_total_traffic_lag_168, network_avg_traffic_lag_1, network_avg_traffic_lag_2, network_avg_traffic_lag_3, network_avg_traffic_lag_24, network_avg_traffic_lag_168, junction_1_traffic_lag_1, junction_1_traffic_lag_2, junction_1_traffic_lag_3, junction_1_traffic_lag_24, junction_1_traffic_lag_168, junction_2_traffic_lag_1, junction_2_traffic_lag_2, junction_2_traffic_lag_3, junction_2_traffic_lag_24, junction_2_traffic_lag_168, junction_3_traffic_lag_1, junction_3_traffic_lag_2, junction_3_traffic_lag_3, junction_3_traffic_lag_24, junction_3_traffic_lag_168, junction_4_traffic_lag_1, junction_4_traffic_lag_2, junction_4_traffic_lag_3, junction_4_traffic_lag_24, junction_4_traffic_lag_168, other_junction_traffic_lag_1, other_junction_traffic_lag_2, other_junction_traffic_lag_3, other_junction_traffic_lag_24, other_junction_traffic_lag_168, other_junction_avg_traffic_lag_1, other_junction_avg_traffic_lag_2, other_junction_avg_traffic_lag_3, other_junction_avg_traffic_lag_24, other_junction_avg_traffic_lag_168
+target=Vehicles
+Excluded: ID, latitude, longitude, gps_source, unlagged spatial columns.
+
+== Missing-value handling ==
+No zero/mean/interpolation fill for missing Junction 4 or spatial lags. Rows missing any required lag are dropped.
+
+== Junction 4 handling ==
+Junction 4 begins 2017-01-01. The spatial experiment keeps only timestamps where all four junctions are observed, then drops rows until lag_168 exists for Junction 4 (expected first usable hour 2017-01-08 00:00). 70/15/15 is applied on that eligible per-junction series, so calendar split dates differ from the 2015-2017 baseline. Pre-overlap Junction 1-3 hours are unused.
+Network totals before Junction 4 existed are three-junction sums. Lags that look into that period keep those historical totals; Junction 4 is not backfilled.
+Junction 4 raw coverage: n=4344 2017-01-01 00:00:00 -> 2017-06-30 23:00:00
+
+== Leakage ==
+Features at T use traffic through T-1 only (own lags and spatial lags). Contemporaneous network_total_traffic / junction_*_traffic / other_junction_* at T are not model inputs. Cross-junction lags are simultaneous historical observations, not causal claims.
+
+Split validation uses DateTime boundaries only, not Vehicles values.
+Contemporaneous network/cross-junction columns at T are dropped. Only lagged values from T-1, T-2, T-3, T-24, T-168 are kept. Own-series vehicles_lag_* are retained. junction_J_traffic_lag_k duplicates vehicles_lag_k on rows for junction J.
+
+== Temporal split (70/15/15 per Junction on eligible rows) ==
+Junction 1: n=4176
+  Train      2017-01-08 00:00:00 -> 2017-05-09 18:00:00  n=2923
+  Validation 2017-05-09 19:00:00 -> 2017-06-04 20:00:00  n=626
+  Test       2017-06-04 21:00:00 -> 2017-06-30 23:00:00  n=627
+Junction 2: n=4176
+  Train      2017-01-08 00:00:00 -> 2017-05-09 18:00:00  n=2923
+  Validation 2017-05-09 19:00:00 -> 2017-06-04 20:00:00  n=626
+  Test       2017-06-04 21:00:00 -> 2017-06-30 23:00:00  n=627
+Junction 3: n=4176
+  Train      2017-01-08 00:00:00 -> 2017-05-09 18:00:00  n=2923
+  Validation 2017-05-09 19:00:00 -> 2017-06-04 20:00:00  n=626
+  Test       2017-06-04 21:00:00 -> 2017-06-30 23:00:00  n=627
+Junction 4: n=4176
+  Train      2017-01-08 00:00:00 -> 2017-05-09 18:00:00  n=2923
+  Validation 2017-05-09 19:00:00 -> 2017-06-04 20:00:00  n=626
+  Test       2017-06-04 21:00:00 -> 2017-06-30 23:00:00  n=627
+
+== Scaler ==
+type=MinMaxScaler
+fitted_on=spatial train only
+feature_scaler=D:\College project\traffic-prediction\models\artifacts\spatial\feature_scaler.joblib
+target_scaler=D:\College project\traffic-prediction\models\artifacts\spatial\target_scaler.joblib
+feature_config=D:\College project\traffic-prediction\models\artifacts\spatial\feature_config.json
+Baseline models/artifacts/feature_scaler.joblib was not refit.
+
+Processed spatial CSVs store unscaled values.

@@ -25,16 +25,38 @@ CORS_ORIGINS = (
     "http://127.0.0.1:5175",
 )
 
-MODEL_NAME = "GRU"
+MODEL_NAME = "Spatial_GRU"
+BASELINE_MODEL_NAME = "GRU"
 LOOKBACK = 168
+SPATIAL_N_FEATURES = 53
 HISTORY_DEFAULT_HOURS = 48
+DATASET_END = "2017-06-30 23:00:00"
 
 GRU_MODEL_PATH = REPO_ROOT / "models" / "trained" / "gru" / "full" / "model.keras"
 FEATURE_SCALER_PATH = REPO_ROOT / "models" / "artifacts" / "feature_scaler.joblib"
 TARGET_SCALER_PATH = REPO_ROOT / "models" / "artifacts" / "target_scaler.joblib"
 
+SPATIAL_GRU_MODEL_PATH = REPO_ROOT / "models" / "trained" / "gru" / "spatial" / "model.keras"
+SPATIAL_FEATURE_SCALER_PATH = (
+    REPO_ROOT / "models" / "artifacts" / "spatial" / "feature_scaler.joblib"
+)
+SPATIAL_TARGET_SCALER_PATH = (
+    REPO_ROOT / "models" / "artifacts" / "spatial" / "target_scaler.joblib"
+)
+SPATIAL_FEATURE_CONFIG_PATH = (
+    REPO_ROOT / "models" / "artifacts" / "spatial" / "feature_config.json"
+)
+SPATIAL_PROCESSED_DIR = REPO_ROOT / "data" / "processed" / "spatial"
+
 INSUFFICIENT_HISTORY = (
     "Insufficient historical data for the requested prediction timestamp."
+)
+INSUFFICIENT_SPATIAL_HISTORY = (
+    "Insufficient historical data for the requested spatial prediction timestamp."
+)
+AFTER_DATASET_END = (
+    "The historical dataset ends at 2017-06-30 23:00 and does not contain "
+    "sufficient data for this timestamp."
 )
 
 # Display metadata for the map. Kaggle traffic.csv has no GPS; these match the UI catalog.

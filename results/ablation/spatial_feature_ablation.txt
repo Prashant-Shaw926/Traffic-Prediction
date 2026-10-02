@@ -1,0 +1,84 @@
+Spatial feature ablation report
+
+A Baseline and D Full_Spatial are frozen same-period results.
+B Network and C Cross_Junction are newly trained GRUs.
+No ranking or composite score is assigned. No causal claims about junction influence.
+
+== Evaluation period ==
+Test_Start=2017-06-04 21:00:00
+Test_End=2017-06-30 23:00:00
+Test_Rows=2508
+
+== Feature groups ==
+Baseline: 13 temporal + own vehicles lags
+Network: 23 = baseline + lagged network_total_traffic and network_avg_traffic
+Cross_Junction: 43 = baseline + lagged junction_1-4_traffic, other_junction_traffic, other_junction_avg_traffic
+Full_Spatial: 53 = baseline + network + cross-junction lags
+Lags: 1, 2, 3, 24, 168 hours. Contemporaneous traffic at T is not a feature.
+
+== Preprocessing / leakage ==
+Four-junction overlap from 2017-01-01, then drop rows until lag_168 exists.
+70/15/15 per Junction on eligible hours. Train-only MinMax scalers per ablation experiment.
+Same eligible rows as the spatial pipeline so test keys match.
+
+== Same-test-set verification ==
+PASS  Baseline_finite: nan=0 inf=0
+PASS  Baseline_keys_aligned: joined on DateTime+Junction
+PASS  Network_finite: nan=0 inf=0
+PASS  Network_keys_aligned: joined on DateTime+Junction
+PASS  Cross_Junction_finite: nan=0 inf=0
+PASS  Cross_Junction_keys_aligned: joined on DateTime+Junction
+PASS  Full_Spatial_finite: nan=0 inf=0
+PASS  Full_Spatial_keys_aligned: joined on DateTime+Junction
+PASS  identical_target_keys: n=2508 2017-06-04 21:00:00 -> 2017-06-30 23:00:00
+PASS  no_duplicate_keys: dups=0
+PASS  frozen_artifacts_unchanged: baseline/spatial models, scalers, and existing comparison files unchanged
+PASS  a_and_d_not_retrained: Baseline and Full_Spatial predictions were read, not regenerated
+PASS  no_ranking: no composite score or winner assigned
+ALL CHECKS PASSED
+
+== Overall metrics (original Vehicles) ==
+Baseline (n=13): RMSE=5.8205  MAE=3.3154  MAPE=16.2124%  R2=0.9623
+Network (n=23): RMSE=5.3679  MAE=2.9095  MAPE=16.0339%  R2=0.9679
+Cross_Junction (n=43): RMSE=5.8486  MAE=3.1001  MAPE=15.6948%  R2=0.9619
+Full_Spatial (n=53): RMSE=5.2790  MAE=2.8757  MAPE=15.0558%  R2=0.9690
+
+== Per-junction metrics ==
+Junction 1
+  Baseline: RMSE=7.3461  MAE=5.2144  MAPE=6.5837%  R2=0.9283
+  Network: RMSE=4.6021  MAE=3.4139  MAPE=4.7814%  R2=0.9719
+  Cross_Junction: RMSE=4.9573  MAE=3.6673  MAPE=5.0672%  R2=0.9674
+  Full_Spatial: RMSE=5.0446  MAE=3.6088  MAPE=4.8541%  R2=0.9662
+Junction 2
+  Baseline: RMSE=3.5269  MAE=2.8237  MAPE=12.0592%  R2=0.8721
+  Network: RMSE=3.0905  MAE=2.4590  MAPE=11.4511%  R2=0.9018
+  Cross_Junction: RMSE=3.6156  MAE=2.8426  MAPE=11.4030%  R2=0.8656
+  Full_Spatial: RMSE=2.8681  MAE=2.3052  MAPE=9.6932%  R2=0.9154
+Junction 3
+  Baseline: RMSE=7.7059  MAE=3.1025  MAPE=16.1793%  R2=0.5767
+  Network: RMSE=8.4819  MAE=3.2225  MAPE=17.2718%  R2=0.4872
+  Cross_Junction: RMSE=9.2938  MAE=3.5016  MAPE=16.8019%  R2=0.3843
+  Full_Spatial: RMSE=8.1916  MAE=3.3515  MAPE=17.2205%  R2=0.5217
+Junction 4
+  Baseline: RMSE=3.1190  MAE=2.1211  MAPE=30.0276%  R2=0.5034
+  Network: RMSE=3.5473  MAE=2.5425  MAPE=30.6311%  R2=0.3576
+  Cross_Junction: RMSE=3.5780  MAE=2.3889  MAPE=29.5069%  R2=0.3465
+  Full_Spatial: RMSE=3.2705  MAE=2.2372  MAPE=28.4552%  R2=0.4540
+
+== Absolute differences vs Baseline (value - Baseline) ==
+Network: RMSE=-0.452628 MAE=-0.405959 MAPE=-0.178550 R2=0.005635
+Cross_Junction: RMSE=0.028083 MAE=-0.215341 MAPE=-0.517673 R2=-0.000365
+Full_Spatial: RMSE=-0.541452 MAE=-0.439762 MAPE=-1.156655 R2=0.006688
+
+== Percentage change vs Baseline ((value - Baseline) / |Baseline| * 100) ==
+Network: RMSE=-7.7765% MAE=-12.2446% MAPE=-1.1013% R2=0.5856%
+Cross_Junction: RMSE=0.4825% MAE=-6.4951% MAPE=-3.1931% R2=-0.0379%
+Full_Spatial: RMSE=-9.3025% MAE=-13.2641% MAPE=-7.1344% R2=0.6950%
+
+== Factual observations ==
+Network RMSE was 5.3679 compared with baseline RMSE 5.8205 on the same test set.
+Cross_Junction RMSE was 5.8486 compared with baseline RMSE 5.8205.
+Full_Spatial RMSE was 5.2790 compared with baseline RMSE 5.8205.
+These statements are not a ranking.
+
+Command: python -m ml.evaluation.ablation_spatial_features

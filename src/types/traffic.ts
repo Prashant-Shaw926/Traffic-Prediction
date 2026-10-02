@@ -22,6 +22,8 @@ export type PredictRequest = {
   end: string
 }
 
+export type PredictionModel = string
+
 export type PredictResponse = {
   locationId: string
   start: string
@@ -29,7 +31,10 @@ export type PredictResponse = {
   points: PredictionPoint[]
   peakCongestion: CongestionLevel
   peakVolume: number
-  model?: string
+  model: PredictionModel
+  features: number
+  lookback: number
+  historical_simulation: boolean
   junction?: number
   predicted_vehicles?: number
 }

@@ -1,0 +1,204 @@
+{
+  "evaluation_period": {
+    "Test_Start": "2017-06-04 21:00:00",
+    "Test_End": "2017-06-30 23:00:00",
+    "Test_Rows": 2508
+  },
+  "baseline_feature_count": 13,
+  "spatial_feature_count": 53,
+  "lookback": 168,
+  "baseline_matched_input_shape": [
+    2508,
+    168,
+    13
+  ],
+  "spatial_test_input_shape": [
+    2508,
+    168,
+    53
+  ],
+  "overall": [
+    {
+      "Model": "Baseline_GRU",
+      "RMSE": 5.820489401407277,
+      "MAE": 3.315427382150063,
+      "MAPE": 16.212426310135022,
+      "R2": 0.9623013904103939,
+      "Test_Start": "2017-06-04 21:00:00",
+      "Test_End": "2017-06-30 23:00:00",
+      "Test_Rows": 2508
+    },
+    {
+      "Model": "Spatial_GRU",
+      "RMSE": 5.2790376463388995,
+      "MAE": 2.8756653915869217,
+      "MAPE": 15.055771407495211,
+      "R2": 0.9689889946870859,
+      "Test_Start": "2017-06-04 21:00:00",
+      "Test_End": "2017-06-30 23:00:00",
+      "Test_Rows": 2508
+    }
+  ],
+  "per_junction": [
+    {
+      "Junction": "1",
+      "Baseline_GRU": {
+        "RMSE": 7.346069095180968,
+        "MAE": 5.214402587857527,
+        "MAPE": 6.58365696856402,
+        "R2": 0.9283048383661044
+      },
+      "Spatial_GRU": {
+        "RMSE": 5.044641932566302,
+        "MAE": 3.608760451355662,
+        "MAPE": 4.85409480828474,
+        "R2": 0.966190361944221
+      },
+      "diff_Spatial_minus_Baseline": {
+        "RMSE": -2.301427162614666,
+        "MAE": -1.605642136501865,
+        "MAPE": -1.7295621602792792,
+        "R2": 0.03788552357811659
+      }
+    },
+    {
+      "Junction": "2",
+      "Baseline_GRU": {
+        "RMSE": 3.526900707881582,
+        "MAE": 2.8236771169931028,
+        "MAPE": 12.05921740628634,
+        "R2": 0.8721434017272487
+      },
+      "Spatial_GRU": {
+        "RMSE": 2.868086841013499,
+        "MAE": 2.3052244489633176,
+        "MAPE": 9.693200520672447,
+        "R2": 0.9154485085261757
+      },
+      "diff_Spatial_minus_Baseline": {
+        "RMSE": -0.658813866868083,
+        "MAE": -0.5184526680297852,
+        "MAPE": -2.3660168856138935,
+        "R2": 0.04330510679892696
+      }
+    },
+    {
+      "Junction": "3",
+      "Baseline_GRU": {
+        "RMSE": 7.705857738446271,
+        "MAE": 3.102499993522924,
+        "MAPE": 16.179260529657697,
+        "R2": 0.5767074022613834
+      },
+      "Spatial_GRU": {
+        "RMSE": 8.191619241834205,
+        "MAE": 3.3514587877192987,
+        "MAPE": 17.220549061484526,
+        "R2": 0.5216583307138736
+      },
+      "diff_Spatial_minus_Baseline": {
+        "RMSE": 0.4857615033879341,
+        "MAE": 0.2489587941963749,
+        "MAPE": 1.0412885318268295,
+        "R2": -0.05504907154750982
+      }
+    },
+    {
+      "Junction": "4",
+      "Baseline_GRU": {
+        "RMSE": 3.119035788184698,
+        "MAE": 2.1211298302266974,
+        "MAPE": 30.02757033603204,
+        "R2": 0.5033634430049059
+      },
+      "Spatial_GRU": {
+        "RMSE": 3.270473012771079,
+        "MAE": 2.23721787830941,
+        "MAPE": 28.455241239539138,
+        "R2": 0.45396672633956225
+      },
+      "diff_Spatial_minus_Baseline": {
+        "RMSE": 0.15143722458638065,
+        "MAE": 0.11608804808271245,
+        "MAPE": -1.5723290964929006,
+        "R2": -0.04939671666534362
+      }
+    }
+  ],
+  "absolute_differences_Spatial_minus_Baseline": {
+    "RMSE": -0.541451755068378,
+    "MAE": -0.43976199056314114,
+    "MAPE": -1.1566549026398114,
+    "R2": 0.006687604276692016
+  },
+  "percentage_change_Spatial_vs_Baseline": {
+    "RMSE": -9.30251251617202,
+    "MAE": -13.264111677751615,
+    "MAPE": -7.13437261341161,
+    "R2": 0.6949594319758745
+  },
+  "no_ranking": true,
+  "models_retrained": false,
+  "checks": [
+    {
+      "name": "identical_datetime_junction_keys",
+      "passed": true,
+      "detail": "spatial_rows=2508 baseline_rows=2508"
+    },
+    {
+      "name": "identical_actual_values",
+      "passed": true,
+      "detail": "comparison-ready Actual reused as the shared target"
+    },
+    {
+      "name": "actual_matches_baseline_vehicles",
+      "passed": true,
+      "detail": "max_abs_diff_vs_baseline_inverse_y=1.52588e-05"
+    },
+    {
+      "name": "no_duplicate_keys",
+      "passed": true,
+      "detail": "spatial_dups=0 baseline_dups=0"
+    },
+    {
+      "name": "same_row_count",
+      "passed": true,
+      "detail": "spatial=2508 baseline=2508 expected=2508"
+    },
+    {
+      "name": "same_evaluation_period",
+      "passed": true,
+      "detail": "start=2017-06-04 21:00:00 end=2017-06-30 23:00:00"
+    },
+    {
+      "name": "no_nan_predictions",
+      "passed": true,
+      "detail": "baseline_nan=0 spatial_nan=0"
+    },
+    {
+      "name": "no_inf_predictions",
+      "passed": true,
+      "detail": "baseline_finite=2508 spatial_finite=2508"
+    },
+    {
+      "name": "baseline_not_retrained",
+      "passed": true,
+      "detail": "fit() was not called"
+    },
+    {
+      "name": "spatial_not_retrained",
+      "passed": true,
+      "detail": "Spatial GRU weights were not loaded for prediction"
+    },
+    {
+      "name": "protected_hashes_unchanged",
+      "passed": true,
+      "detail": "baseline/spatial models, scalers, and frozen result files unchanged"
+    },
+    {
+      "name": "baseline_input_shape",
+      "passed": true,
+      "detail": "shape=(2508, 168, 13) n_features=13"
+    }
+  ]
+}

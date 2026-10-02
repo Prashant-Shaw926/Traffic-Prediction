@@ -6,7 +6,10 @@ from flask import Blueprint, jsonify, request
 
 from backend.config import LOCATIONS, MODEL_NAME
 from backend.services.history_service import history_request
-from backend.services.prediction_service import model_loaded, predict_request
+from backend.services.spatial_prediction_service import (
+    predict_request,
+    spatial_model_loaded,
+)
 from backend.utils.responses import json_error
 
 traffic_bp = Blueprint("traffic", __name__, url_prefix="/api")
@@ -14,7 +17,7 @@ traffic_bp = Blueprint("traffic", __name__, url_prefix="/api")
 
 @traffic_bp.get("/health")
 def health():
-    if not model_loaded():
+    if not spatial_model_loaded():
         return json_error("Model is not loaded.", 503)
     return jsonify({"status": "ok", "model": MODEL_NAME})
 

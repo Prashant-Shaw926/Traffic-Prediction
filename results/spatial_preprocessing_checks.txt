@@ -1,0 +1,20 @@
+Spatial/network preprocessing validation checks
+
+Split order is DateTime-only: max(train DateTime) < min(val DateTime)
+and max(val DateTime) < min(test DateTime). Overlapping Vehicles or
+feature values across splits are expected and are not a failure.
+
+PASS  no_duplicate_junction_datetime: duplicates=0
+PASS  sorted_within_junction: DateTime increasing per Junction
+PASS  no_gps_in_processed_outputs: gps_columns=[]
+PASS  no_gps_values_fabricated: source_non_null_lat=0 lon=0
+PASS  no_contemporaneous_spatial_features: forbidden_in_features=[]
+PASS  no_nan_in_model_features: nan_cells=0
+PASS  no_spatial_feature_uses_vehicles_t: junction_k_traffic_lag_1 equals Vehicles of k at T-1; checked=66816 mismatches=0
+PASS  datetime_split_boundaries_only: max(train DateTime) < min(val DateTime) and max(val DateTime) < min(test DateTime); Vehicles/feature overlap across splits is allowed. J1 max_train=2017-05-09 18:00:00 min_val=2017-05-09 19:00:00 max_val=2017-06-04 20:00:00 min_test=2017-06-04 21:00:00 ok=True | J2 max_train=2017-05-09 18:00:00 min_val=2017-05-09 19:00:00 max_val=2017-06-04 20:00:00 min_test=2017-06-04 21:00:00 ok=True | J3 max_train=2017-05-09 18:00:00 min_val=2017-05-09 19:00:00 max_val=2017-06-04 20:00:00 min_test=2017-06-04 21:00:00 ok=True | J4 max_train=2017-05-09 18:00:00 min_val=2017-05-09 19:00:00 max_val=2017-06-04 20:00:00 min_test=2017-06-04 21:00:00 ok=True
+PASS  scaler_fitted_on_train_only: spatial feature_scaler.data_min_/data_max_ match spatial train min/max
+PASS  junction_identities_preserved: junctions=[1, 2, 3, 4]
+PASS  baseline_artifacts_unchanged: lstm/gru/cnn_lstm metrics and baseline train.csv hashes match
+PASS  no_id_column: ID_present=False
+
+ALL CHECKS PASSED
