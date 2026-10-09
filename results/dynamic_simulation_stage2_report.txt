@@ -1,0 +1,87 @@
+Stage 2 dynamic data-driven junction relationship discovery
+Generated from the Stage 2 and Stage 1 test run. These are lagged statistical associations, not road links and not causal effects.
+
+1. Files created
+- ml/simulation/network_relationship.py
+- ml/simulation/tests/test_stage2.py
+- results/dynamic_simulation_stage2_report.txt
+
+2. Files modified
+- ml/simulation/models.py — added frozen JunctionRelationship
+- ml/simulation/__init__.py — exported the Stage 2 functions
+
+Stage 1 data_provider.py, config.py, and test_stage1.py were not modified.
+No files under models/, backend/services/, or src/ were modified.
+
+3. Relationship formula
+C(source -> target, k) = Pearson correlation of V_source(t-k) and V_target(t).
+Pairs are matched by exact timestamp. A missing hour is skipped. Adjacent rows are not treated as adjacent hours.
+
+4. Candidate lags
+(1, 2, 3, 24, 168)
+Lag 168 stays configured. Inside the 168-hour window it produced 0 aligned pairs at both tested timestamps, because t-168 falls before the window start. Those lags were ignored. They were not filled and were not stored as zero.
+
+5. Historical window definition
+Closed interval [T - 167 hours, T], built by Stage 1 build_simulation_input from data/raw/traffic.csv.
+2017-06-15 10:00 uses 2017-06-08 11:00 through 2017-06-15 10:00.
+2017-06-25 10:00 uses 2017-06-18 11:00 through 2017-06-25 10:00.
+
+6. Relationship selection rule
+For each ordered pair with source != target, keep the candidate lag with the largest absolute correlation, provided it has at least 24 paired observations and a finite Pearson correlation. Ties keep the earlier lag in (1, 2, 3, 24, 168). The signed correlation is stored. There is no correlation threshold. Zero-variance series return no correlation for that lag.
+
+7. Leakage prevention
+Only Stage 1 observations at or before T are available. Pairing additionally rejects a timestamp after the window end. No future row is used.
+
+8. Number of ordered junction pairs
+4 x 3 = 12. Both tested timestamps returned all 12 pairs.
+
+9. Example actual relationship results
+
+2017-06-15 10:00
+1->2 lag=1 r=0.930776 abs=0.930776 n=167
+1->3 lag=24 r=0.634535 abs=0.634535 n=144
+1->4 lag=24 r=0.649497 abs=0.649497 n=144
+2->1 lag=1 r=0.854604 abs=0.854604 n=167
+2->3 lag=1 r=0.584877 abs=0.584877 n=167
+2->4 lag=1 r=0.573662 abs=0.573662 n=167
+3->1 lag=1 r=0.615676 abs=0.615676 n=167
+3->2 lag=1 r=0.655357 abs=0.655357 n=167
+3->4 lag=24 r=0.452990 abs=0.452990 n=144
+4->1 lag=1 r=0.632852 abs=0.632852 n=167
+4->2 lag=1 r=0.599785 abs=0.599785 n=167
+4->3 lag=1 r=0.543679 abs=0.543679 n=167
+
+2017-06-25 10:00
+1->2 lag=1 r=0.954143 abs=0.954143 n=167
+1->3 lag=1 r=0.591766 abs=0.591766 n=167
+1->4 lag=24 r=0.617639 abs=0.617639 n=144
+2->1 lag=1 r=0.832074 abs=0.832074 n=167
+2->3 lag=1 r=0.487275 abs=0.487275 n=167
+2->4 lag=24 r=0.584310 abs=0.584310 n=144
+3->1 lag=1 r=0.605717 abs=0.605717 n=167
+3->2 lag=1 r=0.578134 abs=0.578134 n=167
+3->4 lag=1 r=0.660246 abs=0.660246 n=167
+4->1 lag=1 r=0.578142 abs=0.578142 n=167
+4->2 lag=1 r=0.557263 abs=0.557263 n=167
+4->3 lag=1 r=0.573327 abs=0.573327 n=167
+
+10. Whether relationships differ between tested timestamps
+Yes. The two relationship tuples are not equal. All 12 ordered pairs differ in correlation, selected lag, or both. Examples: 1->3 changes from lag 24 (r=0.634535) on 15 June to lag 1 (r=0.591766) on 25 June. 3->4 changes from lag 24 (r=0.452990) to lag 1 (r=0.660246).
+
+11. Test command
+.\.venv\Scripts\python.exe -m unittest ml.simulation.tests.test_stage2
+.\.venv\Scripts\python.exe -m unittest ml.simulation.tests.test_stage1
+
+12. Test result
+Ran 14 tests in 1.134s — OK
+Stage 2: 8 tests passed.
+Stage 1: 6 tests passed.
+
+13. Limitations
+- No selected relationship in either tested window is negative. A separate Pearson check on [1, 2, 3] against [3, 2, 1] stays negative, so a negative result would be kept. The dataset windows above did not produce one.
+- Lag 168 cannot be estimated from a 168-hour window that ends at T, because the source hour is before the window.
+- No strength threshold or network pruning is applied.
+- These correlations do not identify physical roads and do not prove that one junction causes traffic at another.
+
+14. Frozen pipeline
+The Spatial GRU model, scalers, preprocessing, spatial prediction service, /api/predict, and React frontend were not modified. No model was retrained.

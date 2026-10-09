@@ -1,0 +1,56 @@
+Stage 9 documentation and demonstration preparation
+Documentation only. No application source, simulation code, model, scaler, or dataset file was edited in this stage.
+No commit was created.
+
+1. Files written
+- README.md — replaced the stale GRU-only overview and the Vite template appendix
+- ml/README.md — corrected the sentence that said Flask was not connected to React
+- docs/TECHNICAL_DOCUMENTATION.md
+- docs/DEMO_GUIDE.md
+- docs/VIVA_QUESTIONS.md
+- docs/screenshots/prediction-2017-06-15.png
+- docs/screenshots/simulation-2017-06-15.png
+- docs/screenshots/simulation-2017-06-25.png
+- docs/screenshots/simulation-error-after-dataset-end.png
+- results/dynamic_simulation_stage9_report.txt
+
+backend/README.md was already accurate for Spatial GRU and was left as the API reference.
+
+2. Artifacts checked before writing
+- results/dataset_inspection.txt — 48,120 rows; columns DateTime, Junction, Vehicles, ID; junctions 1–3 from 2015-11-01; junction 4 from 2017-01-01; no weather, GPS, speed, or occupancy
+- results/preprocessing_report.txt — 13 features; 47,448 rows after the lag-168 drop; chronological 70/15/15; train-only MinMax; 0 hours inserted and 0 gaps filled
+- results/spatial_preprocessing_report.txt — overlap from 2017-01-01; first usable hour 2017-01-08 00:00; 16,704 rows; 53 features; test 2,508 rows
+- results/model_comparison.csv — LSTM 5.353706 / 3.337543 / 13.944579 / 0.963205; GRU 5.101930 / 3.207288 / 13.479096 / 0.966585; CNN-LSTM 5.187203 / 3.274684 / 13.359807 / 0.965459
+- results/model_comparison_report.txt exists. results/model_comparison/report.txt does not
+- results/spatial_vs_baseline_gru_same_period.txt — window 2017-06-04 21:00:00 through 2017-06-30 23:00:00; baseline 5.8205 / 3.3154 / 16.2124% / 0.9623; Spatial GRU 5.2790 / 2.8757 / 15.0558% / 0.9690
+- results/ablation/spatial_feature_ablation.txt — 13, 23, 43, and 53 feature metrics as copied into the technical document
+- results/dynamic_simulation_stage7_report.txt — 1 to 3 is lag 24 on 15 June 10:00 and lag 1 on 25 June 10:00
+- results/dynamic_simulation_stage8_report.txt — 48 tests, no npm test script, synthetic negative correlation and excluded-source coverage
+- ml/training/config.py and ml/models/lstm.py, gru.py, cnn_lstm.py — layer sizes used in the technical document
+- No paper file is in the repository. No extra citation was invented. The Kaggle link already present in ml/README.md was kept.
+
+3. Screenshot status
+Captured from the running Flask server on 127.0.0.1:5000 and Vite on http://localhost:5173, using Edge through Playwright. These are application screens, not drawings.
+- prediction-2017-06-15.png shows Prediction, Spatial GRU, 53 features, lookback 168, junction 1, 15 June 2017 10:00–12:00
+- simulation-2017-06-15.png shows the network and the relationship list, including 1 to 3 at lag 24 hours
+- simulation-2017-06-25.png shows 1 to 3 at lag 1 hour and influence index 20.50 for junction 1
+- simulation-error-after-dataset-end.png shows the Flask dataset-end message for 2017-07-01 10:00 and no network
+
+4. Checks after the documentation edits
+npm run lint — passed
+npm run build — passed
+Python regression was not re-run. This stage did not edit a Python file.
+git diff of tracked files touched by this stage is README.md and ml/README.md. Other tracked modifications under src/ and backend/routes/traffic.py were already present from earlier stages and were not edited here. models/, scalers, and data/ were not modified.
+
+5. Discrepancies recorded, not patched in application code
+- The root README previously described a baseline GRU API and included the Vite template text. The replacement matches Spatial GRU and the simulation view.
+- ml/README.md previously said the API was not wired to React.
+- The same-period comparison does not start at midnight on 4 June. It starts at 2017-06-04 21:00:00.
+- Spatial GRU is not better at every junction. Junctions 3 and 4 have higher RMSE and MAE than the baseline GRU on that overlap test.
+- The dataset inspection note that proposed interpolation is not what preprocessing did: inserted hours and filled gaps are both 0.
+- There is no research-paper file in the repo to quote.
+
+6. Remaining gaps
+The June demonstration screens still do not show a negative selected correlation or an excluded contribution. Those cases remain the Stage 8 synthetic tests.
+There is still no npm test script.
+Future work listed in the viva and technical documents is proposed only.

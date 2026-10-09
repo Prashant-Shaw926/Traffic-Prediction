@@ -1,0 +1,92 @@
+Stage 4 integrated Python traffic-network simulation engine
+Generated from the Stage 4-1 test run. This is a historical simulation. It does not use an external live traffic feed.
+
+1. Files created
+- ml/simulation/simulation_engine.py
+- ml/simulation/tests/test_stage4.py
+- results/dynamic_simulation_stage4_report.txt
+
+2. Files modified
+- ml/simulation/models.py — added JunctionSimulationState, SimulationMetadata, and TrafficNetworkSimulation
+- ml/simulation/__init__.py — exported run_simulation
+
+Stage 1 data_provider.py, Stage 2 network_relationship.py, and Stage 3 traffic_influence.py were not modified.
+No files under models/, backend/services/, or src/ were modified.
+
+3. Simulation-engine workflow
+run_simulation(timestamp) calls, in order:
+- build_simulation_input
+- discover_relationships on that same window
+- calculate_traffic_influence on that same window and those relationships
+- load_spatial_artifacts once if the existing cache is empty
+- predict_request once per supported junction
+
+4. Spatial GRU service reused
+backend.services.spatial_prediction_service.predict_request
+Model identifier returned by the service: Spatial_GRU
+Features: 53
+Lookback: 168
+historical_simulation: true
+The engine does not retrain the model and does not call the baseline GRU.
+
+5. Separate outputs
+Predicted traffic is the Spatial GRU predicted_vehicles value.
+Historical traffic is the raw observation at T when that hour exists.
+Relationship strength remains the Stage 2 signed and absolute correlation.
+Influence index remains the Stage 3 formula output.
+These fields are not substituted for each other.
+
+6. Example integrated output
+
+2017-06-15 10:00
+Window: 2017-06-08 11:00 through 2017-06-15 10:00
+Relationships: 12
+Excluded influence contributions: 0
+Junction 1: predicted 90.849861, historical 90, influence 38.810152, sources 3
+Junction 2: predicted 28.737116, historical 29, influence 84.698968, sources 3
+Junction 3: predicted 20.783504, historical 23, influence 78.888722, sources 3
+Junction 4: predicted 10.237036, historical 11, influence 85.676538, sources 3
+
+2017-06-25 10:00
+Window: 2017-06-18 11:00 through 2017-06-25 10:00
+Relationships: 12
+Excluded influence contributions: 0
+Junction 1: predicted 50.778389, historical 52, influence 20.495984, sources 3
+Junction 2: predicted 12.902597, historical 13, influence 52.841640, sources 3
+Junction 3: predicted 14.811055, historical 17, influence 34.837707, sources 3
+Junction 4: predicted 6.137431, historical 5, influence 48.847425, sources 3
+
+7. Timestamp validation and leakage checks
+Malformed timestamps and 2017-07-01 10:00 raise the existing Stage 1 SimulationInputError before inference.
+Every relationship window ends at the requested timestamp.
+Influence uses that same timestamp.
+Stage 1 observations used for relationships and influence are at or before T.
+Vehicles(T) is reported as historical traffic only. It is not an engine-built model input.
+Repeated 2017-06-15 10:00 runs match exactly for relationships and influence, and within 1e-6 for predictions.
+SHA-256 of the spatial model, both spatial scalers, and feature_config.json was unchanged after the tests.
+
+8. Test commands
+.\.venv\Scripts\python.exe -m unittest ml.simulation.tests.test_stage4
+.\.venv\Scripts\python.exe -m unittest ml.simulation.tests.test_stage3
+.\.venv\Scripts\python.exe -m unittest ml.simulation.tests.test_stage2
+.\.venv\Scripts\python.exe -m unittest ml.simulation.tests.test_stage1
+
+9. Test result
+Ran 24 tests in 17.806s — OK
+Stage 4: 5 tests passed, using real Spatial GRU inference.
+Stage 3: 5 tests passed.
+Stage 2: 8 tests passed.
+Stage 1: 6 tests passed.
+
+10. Runtime
+A cold run_simulation for 2017-06-15 10:00 took 5.720 seconds, including Spatial GRU load.
+The following 2017-06-25 10:00 run took 0.269 seconds with the model already cached.
+
+11. Known limitations
+- There is no Flask route and no React view for this engine.
+- The influence index is not a vehicle forecast and does not prove physical causation.
+- Lag 168 remains a candidate, but the 168-hour window still contains no aligned pairs for that lag.
+- predict_request is called once per junction because that is the existing single-junction interface.
+
+12. Frozen pipeline
+Model weights, scalers, feature configuration, preprocessing, the spatial prediction service, /api/predict, and the React frontend were not changed. No model was retrained.

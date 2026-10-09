@@ -1,121 +1,67 @@
-# Traffic Prediction Application
+# Traffic Prediction Application: A Data-Driven Approach Using Deep Learning
 
-React UI plus a Flask GRU inference API. Predictions use the trained GRU model and the Kaggle hourly series (through **2017-06-30 23:00**). This is a historical simulation, not live 2026 traffic.
+Historical traffic prediction for four junctions, plus a historical traffic-network simulation. The running application uses a trained Spatial GRU. LSTM, GRU, and CNN-LSTM remain as completed baseline experiments. This is not a live traffic feed. The series ends at **2017-06-30 23:00**.
 
-## Local development
+## What the app does
 
-Copy `.env.example` to `.env` if needed:
+- **Prediction.** Choose a junction and a 1–2 hour historical window. The UI calls `POST /api/predict` and shows the Spatial GRU forecast against recorded counts.
+- **Historical Traffic Network Simulation.** Choose one historical hour. Python recalculates lagged Pearson relationships and a formula-based influence index, predicts each junction with the same Spatial GRU, and the UI draws that response.
 
+Relationships are lagged statistical associations. They are not roads and they are not causes. The network drawing is a display layout, not a map.
+
+## Stack
+
+- React, TypeScript, Vite, Tailwind CSS
+- Flask REST API
+- Keras 3 with the PyTorch backend
+- Trained artifacts under `models/`; no retraining at runtime
+
+## Setup (Windows)
+
+From the repository root, with Python available for the virtual environment:
+
+```powershell
+py -3 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r ml/requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r backend/requirements.txt
+npm install
 ```
+
+Copy `.env.example` to `.env` if needed. The frontend expects:
+
+```text
 VITE_API_BASE_URL=/api
 ```
 
-Vite proxies `/api` to Flask at `http://127.0.0.1:5000`. **Both terminals must be running.** If you only start `npm run dev`, the junction dropdown stays empty.
+Vite proxies `/api` to Flask at `http://127.0.0.1:5000`. Start both processes.
 
-**Terminal 1 — Flask (required)**
+**Terminal 1 — Flask**
 
-```bash
+```powershell
 $env:KERAS_BACKEND="torch"
 .\.venv\Scripts\python.exe -m flask --app backend.app run --host 127.0.0.1 --port 5000
 ```
 
-Backend: http://127.0.0.1:5000
-
 **Terminal 2 — React**
 
-```bash
-npm install
+```powershell
 npm run dev
 ```
 
-Frontend: http://localhost:5173 (or the next free port Vite prints)
+Open `http://localhost:5173`. If only Vite is running, the junction list stays empty.
 
-Restart `npm run dev` after changing `.env` or `vite.config.ts`.
+## Demo times
 
-### Demo query
+- Prediction: junction 1, 2017-06-15 10:00 to 2017-06-15 12:00.
+- Simulation: `2017-06-15T10:00`, then `2017-06-25T10:00`.
+- A timestamp after 2017-06-30 23:00, including a 2026 date, is rejected. The dataset does not contain it.
 
-- Junction 1
-- 2017-06-15 10:00 to 12:00 (three hourly GRU points)
+## Further reading
 
-Junction 4 also has data at 2017-06-15 10:00. Dates after 30 Jun 2017 (including “today”) return an insufficient-history error from Flask. There is no mock-data fallback.
+- [docs/TECHNICAL_DOCUMENTATION.md](docs/TECHNICAL_DOCUMENTATION.md)
+- [docs/DEMO_GUIDE.md](docs/DEMO_GUIDE.md)
+- [docs/VIVA_QUESTIONS.md](docs/VIVA_QUESTIONS.md)
+- [backend/README.md](backend/README.md) for the API
+- [ml/README.md](ml/README.md) for the offline training pipeline
 
-ML pipeline notes: [ml/README.md](ml/README.md). Flask API: [backend/README.md](backend/README.md).
-
----
-
-# React + TypeScript + Vite
-
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
-
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
+Dataset file: `data/raw/traffic.csv`, from the [Kaggle traffic prediction dataset](https://www.kaggle.com/datasets/fedesoriano/traffic-prediction-dataset). Do not overwrite `data/raw/`.

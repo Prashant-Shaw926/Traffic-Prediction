@@ -1,0 +1,84 @@
+Stage 3 formula-based dynamic traffic influence
+Generated from the Stage 3, Stage 2, and Stage 1 test run.
+The influence score is a mathematical index. It is not a predicted vehicle count and it is not evidence that one junction physically causes traffic at another.
+
+1. Files created
+- ml/simulation/traffic_influence.py
+- ml/simulation/tests/test_stage3.py
+- results/dynamic_simulation_stage3_report.txt
+
+2. Files modified
+- ml/simulation/models.py — added frozen influence dataclasses
+- ml/simulation/__init__.py — exported the Stage 3 functions
+
+Stage 1 data_provider.py and Stage 2 network_relationship.py were not modified.
+No files under models/, backend/services/, or src/ were modified.
+
+3. Formula and variable definitions
+I_j(T) = sum over sources i of [W_ij(T) * V_i(T - k_ij)]
+
+I_j(T) is the incoming influence index for target junction j at simulation timestamp T.
+k_ij is the lag selected by Stage 2 for that ordered pair.
+V_i(T - k_ij) is the source junction's observed vehicle count at that exact hour.
+The sum uses only relationships whose exact source hour exists in the Stage 1 window.
+
+4. Weight definition
+W_ij(T) is the Stage 2 absolute_correlation. The signed correlation is copied onto each contribution as signed_correlation and is not used as the weight. Stage 2's selection rule was not changed.
+
+5. Example individual contribution calculations
+
+2017-06-15 10:00, target junction 1:
+2->1 lag=1 signed=0.854604 W=0.854604 V(2017-06-15 09:00)=25 contribution=21.365103
+3->1 lag=1 signed=0.615676 W=0.615676 V(2017-06-15 09:00)=16 contribution=9.850823
+4->1 lag=1 signed=0.632852 W=0.632852 V(2017-06-15 09:00)=12 contribution=7.594226
+Sum = 38.810152
+
+2017-06-15 10:00, target junction 4, one lagged term:
+1->4 lag=24 signed=0.649497 W=0.649497 V(2017-06-14 10:00)=91 contribution=59.104260
+
+6. Total influence per junction
+
+2017-06-15 10:00 — no excluded contributions
+Junction 1: 38.810152 from 3 sources
+Junction 2: 84.698968 from 3 sources
+Junction 3: 78.888722 from 3 sources
+Junction 4: 85.676538 from 3 sources
+
+2017-06-25 10:00 — no excluded contributions
+Junction 1: 20.495984 from 3 sources
+Junction 2: 52.841640 from 3 sources
+Junction 3: 34.837707 from 3 sources
+Junction 4: 48.847425 from 3 sources
+
+Junction 1's index at 15 June (38.810152) is not the observed vehicle count at 10:00.
+
+7. Missing-observation handling
+If T - lag_hours is not an exact observation for the source junction, that contribution is omitted and recorded with reason "missing exact source observation". It is not interpolated, replaced by a nearby row, or entered as zero. An isolated fixture confirmed a present contribution of 5.0 stayed 5.0 when a second source hour was missing. Both real timestamps above had every required source hour, so excluded_contributions was empty.
+
+8. Leakage prevention checks
+Every included source timestamp equals T - lag_hours and is at or before T.
+Source traffic matches the raw historical row at that exact timestamp and junction.
+Relationship discovery still uses only the Stage 1 window ending at T.
+Target traffic at T is not used as a substitute for the lagged source observation.
+Repeating 2017-06-15 10:00 returns an identical result.
+2017-07-01 10:00 and a malformed timestamp still raise the Stage 1 SimulationInputError.
+
+9. Test commands
+.\.venv\Scripts\python.exe -m unittest ml.simulation.tests.test_stage3
+.\.venv\Scripts\python.exe -m unittest ml.simulation.tests.test_stage2
+.\.venv\Scripts\python.exe -m unittest ml.simulation.tests.test_stage1
+
+10. Test result
+Ran 19 tests in 1.873s — OK
+Stage 3: 5 tests passed.
+Stage 2: 8 tests passed.
+Stage 1: 6 tests passed.
+
+11. Limitations
+- The index is not a vehicle forecast and does not prove physical causation.
+- Both tested windows selected only positive correlations, so the stored weight equals the signed correlation numerically. A negative signed correlation would still be preserved, and the weight would be its absolute value.
+- A relationship whose exact lagged hour is outside the Stage 1 window, including an unused lag of 168, cannot contribute.
+- No strength threshold is applied. Every selected Stage 2 relationship with an exact source observation is included.
+
+12. Frozen pipeline
+Stages 1 and 2 behavior, Spatial GRU artifacts, scalers, preprocessing, the spatial prediction service, /api/predict, and the React frontend were not changed. No model was retrained.

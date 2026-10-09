@@ -1,6 +1,6 @@
 # Traffic prediction ML pipeline
 
-Inspection, preprocessing, **full LSTM**, **full GRU**, **full CNN-LSTM**, and model comparison are implemented. A Flask GRU inference API lives in `backend/` (not wired to React yet). ARIMA is not trained yet.
+Inspection, preprocessing, **full LSTM**, **full GRU**, **full CNN-LSTM**, Spatial GRU training, and model comparison are implemented. The Flask API in `backend/` serves Spatial GRU inference to the React app. ARIMA is not trained.
 
 ## Dataset
 
@@ -53,5 +53,5 @@ If `data/raw/traffic.csv` is missing, that command exits with download instructi
 | `ml/evaluation/metrics.py` | implemented |
 | `ml/evaluation/compare_models.py` | LSTM / GRU / CNN-LSTM comparison (no retraining) |
 | `ml/inference/predictor.py` | implemented |
-| `backend/` | Flask GRU inference API |
+| `backend/` | Flask API; `POST /api/predict` uses Spatial GRU |
 | ARIMA | not trained yet |

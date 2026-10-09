@@ -4,19 +4,21 @@ type AppShellProps = {
   query: ReactNode
   map: ReactNode
   inspector: ReactNode
+  nav?: ReactNode
 }
 
-export const AppShell = ({ query, map, inspector }: AppShellProps) => {
+export const AppShell = ({ query, map, inspector, nav }: AppShellProps) => {
   return (
     <div className="flex h-svh w-full flex-col overflow-hidden bg-canvas text-ink">
       <header className="flex shrink-0 flex-col gap-3 border-b border-line px-4 py-3 lg:flex-row lg:items-end lg:gap-8">
-        <div className="flex items-baseline justify-between gap-4 lg:block lg:min-w-44">
+        <div className="flex items-baseline justify-between gap-4 lg:block lg:min-w-56">
           <h1 className="text-[15px] font-medium tracking-tight">
             Traffic Prediction
           </h1>
           <p className="text-[11px] uppercase tracking-[0.16em] text-muted">
             Historical simulation
           </p>
+          {nav ? <div className="mt-2">{nav}</div> : null}
         </div>
         <div className="min-w-0 flex-1">{query}</div>
       </header>

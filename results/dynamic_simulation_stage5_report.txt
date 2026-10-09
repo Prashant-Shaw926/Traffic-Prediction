@@ -1,0 +1,83 @@
+Stage 5 Flask API integration for the dynamic traffic simulation
+Generated from the API test client and the Stage 1-4 regression run.
+This endpoint serves a historical simulation. It does not use an external live traffic feed.
+The dataset ends at 2017-06-30 23:00:00.
+
+1. Files created
+- backend/services/simulation_api.py
+- backend/test_simulation_api.py
+- results/dynamic_simulation_stage5_report.txt
+
+2. Files modified
+- backend/routes/traffic.py — added POST /api/simulation
+
+Stage 1-4 calculation modules, spatial_prediction_service.py, model artifacts, scalers, and src/ were not modified.
+
+3. Endpoint
+POST /api/simulation
+Request: {"datetime": "2017-06-15T10:00:00"}
+
+The route checks for a JSON object, then simulation_response calls run_simulation. It does not calculate correlations or influence itself.
+
+Success JSON keeps these fields separate:
+- junctions[].predicted_traffic — Spatial GRU output
+- junctions[].historical_traffic — observed vehicles at T, or null
+- junctions[].incoming_influence — Stage 3 influence index
+- relationships[].correlation and absolute_correlation — Stage 2 lagged association
+- influence_result.metadata.score_kind = influence_index
+- metadata.historical_simulation = true
+- metadata.model, features, lookback, relationship_method, supported_lags, window bounds, dataset_end
+
+4. Measured example results
+
+2017-06-15T10:00:00
+Window: 2017-06-08T11:00:00 through 2017-06-15T10:00:00
+Metadata: Spatial_GRU, 53 features, lookback 168, historical_simulation true, influence_index
+Relationships: 12
+Excluded influence contributions: 0
+Example relationship: 1 -> 2, lag 1, correlation 0.930776, absolute correlation 0.930776
+Junction 1: predicted 90.849861, historical 90.0, influence 38.810152, sources 3
+Junction 2: predicted 28.737116, historical 29.0, influence 84.698968, sources 3
+Junction 3: predicted 20.783504, historical 23.0, influence 78.888722, sources 3
+Junction 4: predicted 10.237036, historical 11.0, influence 85.676538, sources 3
+
+2017-06-25T10:00:00
+Window: 2017-06-18T11:00:00 through 2017-06-25T10:00:00
+Relationships: 12
+Excluded influence contributions: 0
+Example relationship: 1 -> 2, lag 1, correlation 0.954143, absolute correlation 0.954143
+Junction 1: predicted 50.778389, historical 52.0, influence 20.495984, sources 3
+Junction 2: predicted 12.902597, historical 13.0, influence 52.841640, sources 3
+Junction 3: predicted 14.811055, historical 17.0, influence 34.837707, sources 3
+Junction 4: predicted 6.137431, historical 5.0, influence 48.847425, sources 3
+
+5. Error handling
+Missing datetime: HTTP 400, "Missing request fields: datetime is required."
+Malformed datetime: HTTP 400, "Invalid datetime."
+Non-hourly timestamp: HTTP 400, "Datetime must be aligned to a full hour."
+2017-01-01T00:00:00: HTTP 400, "Insufficient historical data for the requested simulation timestamp."
+2017-07-01T10:00:00: HTTP 400, "The historical dataset ends at 2017-06-30 23:00 and does not contain sufficient data for this timestamp."
+Other exceptions are not converted into a success body.
+
+6. Regression
+GET /api/health returned 200 and model Spatial_GRU.
+GET /api/locations returned 200 and 4 locations.
+GET /api/history?junction=1 returned 200 and a non-empty history list.
+POST /api/predict for junction 1 at 2017-06-15T10:00:00 returned 200 with Spatial_GRU, 53 features, lookback 168, predicted_vehicles, and points.
+Two identical simulation posts returned the same JSON.
+
+7. Test commands
+.\.venv\Scripts\python.exe -m unittest backend.test_simulation_api
+.\.venv\Scripts\python.exe -m unittest ml.simulation.tests.test_stage4 ml.simulation.tests.test_stage3 ml.simulation.tests.test_stage2 ml.simulation.tests.test_stage1
+
+8. Test result
+Ran 33 tests in 4.913s — OK
+API tests: 9 passed.
+Stage 4: 5 passed.
+Stage 3: 5 passed.
+Stage 2: 8 passed.
+Stage 1: 6 passed.
+
+9. Frozen pipeline
+Model weights, scalers, feature configuration, Stage 1-4 calculation behavior, the spatial prediction service, /api/predict, and the React frontend were not changed. No model was retrained.
+The React app does not call /api/simulation yet.

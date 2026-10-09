@@ -1,0 +1,174 @@
+Stage 7 dynamic simulation integration, consistency, and reproducibility
+Generated from unittest runs and a browser session against Flask and Vite.
+This is a historical simulation. It is not an external live traffic feed, and the relationships are lagged statistical associations, not roads or causes.
+The dataset ends at 2017-06-30 23:00:00.
+No production formula, model, scaler, dataset, or /api/predict code was changed. No UI defect required a code change.
+
+1. Scope and files inspected
+Python: ml/simulation/config.py, data_provider.py, network_relationship.py, traffic_influence.py, simulation_engine.py, models.py.
+API: backend/services/simulation_api.py, backend/routes/traffic.py, backend/services/spatial_prediction_service.py.
+React: src/types/simulation.ts, src/api/simulation.ts, src/components/simulation/SimulationPanel.tsx, TrafficNetwork.tsx, relationship.ts, src/App.tsx.
+Prior reports: results/dynamic_simulation_stage1_report.txt through results/dynamic_simulation_stage6_report.txt.
+
+Source inspection, not a runtime result: src/ has no Pearson calculation and does not sum absolute_correlation times source traffic. The SVG uses the returned absolute_correlation only to set stroke width and opacity. Junction cards, the selected relationship, and contribution lines render response fields.
+
+2. Timestamps tested
+2017-06-15 10:00:00
+2017-06-25 10:00:00
+2017-06-15 18:00:00
+2017-06-20 08:00:00
+Plus the boundary inputs in sections 9 and 8.
+
+3. Relationships
+Each timestamp produced 12 directed relationships, one for every ordered pair among junctions 1-4. All four relationship signatures differed. None of the six pairs of timestamps was identical. That is a measured result, not a requirement that every timestamp must differ.
+Every relationship's lag was one of the configured lags (1, 2, 3, 24, 168). Paired observations were 167 for lag 1 and 144 for lag 24, both above the configured minimum of 24. Lag 168 was not selected inside these 168-hour windows.
+Selected correlations on these four timestamps were all positive. Absolute correlation equalled the absolute value of the signed correlation, so the sign was preserved. These windows simply did not select a negative correlation.
+The engine result for each timestamp matched a fresh discover_relationships and calculate_traffic_influence on that timestamp's window. The values are not timestamp-specific constants in the source.
+
+2017-06-15 10:00:00
+1->2 lag 1 r 0.930776 abs 0.930776 n 167
+1->3 lag 24 r 0.634535 abs 0.634535 n 144
+1->4 lag 24 r 0.649497 abs 0.649497 n 144
+2->1 lag 1 r 0.854604 abs 0.854604 n 167
+2->3 lag 1 r 0.584877 abs 0.584877 n 167
+2->4 lag 1 r 0.573662 abs 0.573662 n 167
+3->1 lag 1 r 0.615676 abs 0.615676 n 167
+3->2 lag 1 r 0.655357 abs 0.655357 n 167
+3->4 lag 24 r 0.452990 abs 0.452990 n 144
+4->1 lag 1 r 0.632852 abs 0.632852 n 167
+4->2 lag 1 r 0.599785 abs 0.599785 n 167
+4->3 lag 1 r 0.543679 abs 0.543679 n 167
+
+2017-06-25 10:00:00
+1->2 lag 1 r 0.954143 abs 0.954143 n 167
+1->3 lag 1 r 0.591766 abs 0.591766 n 167
+1->4 lag 24 r 0.617639 abs 0.617639 n 144
+2->1 lag 1 r 0.832074 abs 0.832074 n 167
+2->3 lag 1 r 0.487275 abs 0.487275 n 167
+2->4 lag 24 r 0.584310 abs 0.584310 n 144
+3->1 lag 1 r 0.605717 abs 0.605717 n 167
+3->2 lag 1 r 0.578134 abs 0.578134 n 167
+3->4 lag 1 r 0.660246 abs 0.660246 n 167
+4->1 lag 1 r 0.578142 abs 0.578142 n 167
+4->2 lag 1 r 0.557263 abs 0.557263 n 167
+4->3 lag 1 r 0.573327 abs 0.573327 n 167
+
+2017-06-15 18:00:00
+1->2 lag 1 r 0.931574 abs 0.931574 n 167
+1->3 lag 24 r 0.628098 abs 0.628098 n 144
+1->4 lag 24 r 0.620148 abs 0.620148 n 144
+2->1 lag 1 r 0.848806 abs 0.848806 n 167
+2->3 lag 1 r 0.588763 abs 0.588763 n 167
+2->4 lag 1 r 0.555540 abs 0.555540 n 167
+3->1 lag 1 r 0.628069 abs 0.628069 n 167
+3->2 lag 1 r 0.668343 abs 0.668343 n 167
+3->4 lag 1 r 0.466553 abs 0.466553 n 167
+4->1 lag 1 r 0.642381 abs 0.642381 n 167
+4->2 lag 1 r 0.609129 abs 0.609129 n 167
+4->3 lag 1 r 0.559819 abs 0.559819 n 167
+
+2017-06-20 08:00:00
+1->2 lag 1 r 0.952615 abs 0.952615 n 167
+1->3 lag 1 r 0.659094 abs 0.659094 n 167
+1->4 lag 1 r 0.577985 abs 0.577985 n 167
+2->1 lag 1 r 0.844551 abs 0.844551 n 167
+2->3 lag 1 r 0.617716 abs 0.617716 n 167
+2->4 lag 1 r 0.501605 abs 0.501605 n 167
+3->1 lag 1 r 0.675959 abs 0.675959 n 167
+3->2 lag 1 r 0.695438 abs 0.695438 n 167
+3->4 lag 24 r 0.449350 abs 0.449350 n 144
+4->1 lag 1 r 0.578184 abs 0.578184 n 167
+4->2 lag 1 r 0.567552 abs 0.567552 n 167
+4->3 lag 1 r 0.460416 abs 0.460416 n 167
+
+Examples of a real lag change, not a constant edge list:
+1->3 is lag 24 at 15 June 10:00 and 15 June 18:00, and lag 1 at 25 June 10:00 and 20 June 08:00.
+3->4 is lag 24, lag 1, lag 1, then lag 24 across those four timestamps in the same order.
+
+4. Prediction, history, and influence
+Influence is the Stage 3 index. It is not the Spatial GRU vehicle prediction. On every junction below, the two numbers differ. Historical traffic is the raw CSV count at T. Each junction had 3 valid sources.
+
+2017-06-15 10:00:00
+Junction 1 predicted 90.849861 historical 90.0 influence 38.810152
+Junction 2 predicted 28.737116 historical 29.0 influence 84.698968
+Junction 3 predicted 20.783504 historical 23.0 influence 78.888722
+Junction 4 predicted 10.237036 historical 11.0 influence 85.676538
+
+2017-06-25 10:00:00
+Junction 1 predicted 50.778389 historical 52.0 influence 20.495984
+Junction 2 predicted 12.902597 historical 13.0 influence 52.841640
+Junction 3 predicted 14.811055 historical 17.0 influence 34.837707
+Junction 4 predicted 6.137431 historical 5.0 influence 48.847425
+
+2017-06-15 18:00:00
+Junction 1 predicted 100.777679 historical 98.0 influence 48.865652
+Junction 2 predicted 37.251961 historical 35.0 influence 112.816614
+Junction 3 predicted 24.857410 historical 16.0 influence 96.070720
+Junction 4 predicted 8.125994 historical 6.0 influence 100.226961
+
+2017-06-20 08:00:00
+Junction 1 predicted 60.361561 historical 60.0 influence 20.752821
+Junction 2 predicted 20.369734 historical 20.0 influence 55.977401
+Junction 3 predicted 12.648555 historical 13.0 influence 44.418084
+Junction 4 predicted 5.246056 historical 6.0 influence 42.445777
+
+Each predicted value matched predict_request for the same junction and timestamp to 6 decimal places. The spatial feature_config.json feature list does not contain "Vehicles". The spatial prediction service still raises if Vehicles(T) is placed in the feature tensor. That guard was exercised by the prediction calls above.
+
+5. Reproducibility
+A second run_simulation for 2017-06-15 10:00:00 and for 2017-06-25 10:00:00 matched the first run: same relationships, same influence result, same metadata, same historical traffic and influence totals, and predicted traffic equal to 6 decimal places.
+Two POST /api/simulation bodies for each of those timestamps were equal to each other.
+
+6. Python engine versus Flask
+For both repeat timestamps, the test-client JSON equalled simulation_response for the same datetime. Junction predictions, historical values, influence totals, relationship correlations, lags, paired counts, contribution amounts, source traffic, and signed correlations matched the engine within an absolute tolerance of 1e-12. No larger float gap appeared, so the tolerance was not relaxed.
+
+7. Influence formula
+Checked in test_influence_arithmetic_uses_raw_lagged_traffic against the implementation:
+contribution = absolute_correlation * V_source(T - lag_hours)
+For every included contribution on all four timestamps, the lag and signed correlation matched the selected relationship, the source traffic equalled the raw CSV value at that exact source timestamp, and the contribution matched the product. The junction influence index matched the sum of its included contributions. An excluded missing-source row would have to be absent from that raw lookup and absent from the sum. These four timestamps included every selected relationship (3 sources on each junction, 12 relationships), so there was no excluded row to display. Missing hours were not inserted as zero.
+
+8. Browser and UI synchronization
+Flask was already serving http://127.0.0.1:5000 and Vite was already serving http://localhost:5173. Edge, headless, opened the simulation view.
+
+For 2017-06-15T10:00, 2017-06-25T10:00, 2017-06-15T18:00, and 2017-06-20T08:00 the UI comparison against that response found no mismatches. Each response had 4 nodes and 12 edges. Every returned relationship id was drawn. The selected panel showed the first relationship's signed correlation to 3 decimals, its absolute correlation, and its lag. Junction cards showed predicted traffic, historical traffic, and the influence index as separate figures. The first contribution line and the model, feature count, and lookback metadata were present. The inspector showed that response's window end. Changing the timestamp replaced the network with the new response.
+
+A browser double-click on Run Simulation, with the response delayed, sent 1 POST. The button was disabled and read "Running…". A second user click is not accepted while that request is in flight. No UI change was made.
+A script that called the button's click method twice inside one page.evaluate, before React committed, did start 2 requests. That is not the browser double-click path. After a normal click the control is disabled, so a later click does not submit and an older response is not left on screen as the new timestamp.
+
+9. Error and boundary checks
+API tests and the browser both returned HTTP 400 with the Flask text. After each UI failure the network was gone (network count 0), so the previous success was not left up as the failed request's result.
+
+2017-06-15T10:00:00 HTTP 200
+2017-06-25T10:00:00 HTTP 200
+not-a-datetime, sent unchanged from the raw field: "Invalid datetime."
+empty datetime, sent as "": "Missing request fields: datetime is required."
+2017-06-15T10:30:00: "Datetime must be aligned to a full hour."
+2017-01-01T00:00:00: "Insufficient historical data for the requested simulation timestamp."
+2017-07-01T10:00:00: "The historical dataset ends at 2017-06-30 23:00 and does not contain sufficient data for this timestamp."
+2026-10-09T10:00:00: the same dataset-end message.
+
+10. Prediction regression
+POST /api/predict for junction 1 at 2017-06-15T10:00:00 returned HTTP 200 with model Spatial_GRU, 53 features, and lookback 168, from the Flask test client.
+In the browser, after the simulation checks, Prediction sent POST http://localhost:5173/api/predict, received HTTP 200, showed the map and the forecast chart, and did not send /api/simulation during that prediction.
+
+11. Artifact hashes
+SHA-256 before and after the Stage 7 tests matched.
+Spatial model.keras 16d7fb47f1bc3b8575d7f470604043ff96615c7a7d6a7a5e199003e8262c7598
+Spatial feature_scaler.joblib 9438633af0d18176c7837eba4b81e8bbfe64b32f4a923f59f3e9901bdac47b82
+Spatial target_scaler.joblib 9b8f13e0a5a4fcba3add33002732189f527357399e8a7c27dd66b60f096a74be
+Spatial feature_config.json 2e71f126f81f60a83ddff3e6b9c278ffb5d5a9a162e1e102e3b6e0e1eec66089
+Baseline GRU model.keras d41c8e1f7ad4b7ec7185a370d2c1702630321822f3785e64b3a7311322788230
+Baseline feature_scaler.joblib e05d61ecab533414333b8e29676e2cf248858cbf3772daef5deafa4d2870ada7
+Baseline target_scaler.joblib 53d4779f59b15fc1b4df21d5f379002de4f5be5af82a7bd4091d6b98b1aab5a2
+
+12. Tests and commands
+Added ml/simulation/tests/test_stage7.py and backend/test_simulation_stage7.py. Existing Stage 1-6 tests were not edited or weakened.
+Command: .\.venv\Scripts\python.exe -m unittest ml.simulation.tests.test_stage7 backend.test_simulation_stage7 -v
+Result: Ran 10 tests in 5.192s — OK
+The same 10 tests had already passed on the immediately previous run (5.190s).
+Browser script: temporary Playwright check against http://localhost:5173 using Edge. It is not part of the repository.
+
+13. Defects, fixes, and limitations
+No production defect was fixed. The loading guard blocks a real double-click.
+Keras emitted a NumPy copy-keyword deprecation warning during inference. The assertions still passed. The warning was not changed.
+These four timestamps did not produce a negative selected correlation and did not exclude a contribution. Sign handling and exclusion are still covered by the assertions and by the earlier Stage 2 and Stage 3 tests, but this run did not display a negative edge or an excluded row in the UI.
+The same-stack evaluate double click described in section 8 is a scripted path, not the control's browser behavior.

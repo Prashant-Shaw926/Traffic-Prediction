@@ -1,0 +1,114 @@
+Stage 8 final QA, edge-case testing, and project integrity
+Generated from unittest runs, npm lint/build, artifact hashes, and a browser session.
+The application is a historical simulation. It is not an external live feed, and relationships are lagged statistical associations, not roads or causes.
+No model was trained. The correlation method, influence formula, dataset, and /api/predict contract were not changed.
+
+1. Scope and environment
+Windows, repo D:\College project\traffic-prediction, Python .venv, KERAS_BACKEND=torch.
+Flask was already serving http://127.0.0.1:5000. Vite was already serving http://localhost:5173.
+package.json scripts are dev, build, lint, and preview. There is no frontend unit-test runner. None was added.
+Unittest discovery found only the simulation modules listed below. No other test_*.py files are in the repo. Training scripts were not run.
+
+2. Files created or modified for Stage 8
+Created: ml/simulation/tests/test_stage8.py
+Created: results/dynamic_simulation_stage8_report.txt
+Modified: src/components/simulation/SimulationPanel.tsx — synchronous in-flight ref
+Stage 1-7 tests, models, scalers, datasets, backend endpoints, and .env files were not edited.
+
+3. Negative-correlation tests
+ml/simulation/tests/test_stage8.py uses in-memory hourly series and a test-only SimulationConfig. Production config.py was not changed.
+Ran 5 tests in 0.004s — OK, and again inside the full suite in 0.004s — OK.
+- A lag-1 series with correlation -1.0 beat a weaker lag-2 absolute correlation. The selected signed value stayed negative. absolute_correlation equalled its absolute value.
+- When lag 1 and lag 2 both had absolute correlation 1.0, the earlier lag (1) was kept. Its signed correlation stayed negative.
+- A perfect positive lag 2 beat a weaker lag 1. The selected correlation was +1.0.
+These are fixture results, not production-timestamp constants.
+
+4. Missing and excluded contributions
+The same module built one source with the exact hour at T - 1 and another source without that hour.
+The missing source was excluded with reason "missing exact source observation".
+It was not stored as vehicle count 0 and was not added into the total.
+The target influence index equalled the sum of the included contribution only.
+Junction 4 had no included contributions, so incoming_influence stayed None and valid_source_count stayed 0.
+A separate test applied the influence formula to a selected negative relationship: the weight was the absolute correlation, signed_correlation stayed negative, and contribution equalled weight times the raw source count at T - lag.
+
+5. Duplicate-submission protection
+Defect: status === 'loading' updates only after React commits, so two click() calls in one page.evaluate could both start POST /api/simulation. Stage 7 measured that.
+Fix: SimulationPanel sets a useRef true before runSimulation and clears it in finally. An empty datetime-local value still returns before the ref is set. The loading label, result clearing, and backend error text are unchanged.
+Browser evidence after the fix, with the response delayed:
+- Two synchronous click() calls: 1 request.
+- A later Run Simulation after that request finished: 1 additional request (2 total).
+- A browser double-click: 1 request, button disabled, label Running….
+No npm unit test exists for this. The check above is the Playwright session, not a package.json test.
+
+6. Python regression
+.\.venv\Scripts\python.exe -m unittest ml.simulation.tests.test_stage1
+Ran 6 tests in 0.480s — OK
+.\.venv\Scripts\python.exe -m unittest ml.simulation.tests.test_stage2
+Ran 8 tests in 0.846s — OK
+.\.venv\Scripts\python.exe -m unittest ml.simulation.tests.test_stage3
+Ran 5 tests in 0.758s — OK
+.\.venv\Scripts\python.exe -m unittest ml.simulation.tests.test_stage4
+Ran 5 tests in 8.258s — OK
+.\.venv\Scripts\python.exe -m unittest ml.simulation.tests.test_stage7
+Ran 6 tests in 7.904s — OK
+.\.venv\Scripts\python.exe -m unittest ml.simulation.tests.test_stage8
+Ran 5 tests in 0.004s — OK
+.\.venv\Scripts\python.exe -m unittest backend.test_simulation_api
+Ran 9 tests in 1.342s — OK
+.\.venv\Scripts\python.exe -m unittest backend.test_simulation_stage7
+Ran 4 tests in 2.465s — OK
+Sequential total about 45.6s. 48 tests, 0 failures.
+Keras printed a NumPy copy-keyword deprecation warning during inference. Assertions still passed. That warning was not changed.
+
+7. Frontend lint, build, and tests
+npm run lint — passed.
+npm run build — passed (tsc -b and vite build).
+npm test — skipped. package.json has no test script.
+
+8. Simulation API and prediction regression
+Browser, not only the API tests:
+2017-06-15T10:00 HTTP 200, 4 nodes, 12 edges, no mismatches against predicted traffic, historical traffic, influence index, signed correlation, lag, or the first contribution.
+2017-06-25T10:00 HTTP 200, 4 nodes, 12 edges, no mismatches.
+not-a-datetime posted unchanged. HTTP 400. UI text "Invalid datetime." Network cleared.
+Empty raw timestamp posted "". HTTP 400. UI text "Missing request fields: datetime is required." Network cleared.
+2017-06-15T10:30 HTTP 400. "Datetime must be aligned to a full hour." Network cleared.
+2017-01-01T00:00 HTTP 400. "Insufficient historical data for the requested simulation timestamp." Network cleared.
+2017-07-01T10:00 HTTP 400. "The historical dataset ends at 2017-06-30 23:00 and does not contain sufficient data for this timestamp." Network cleared.
+Prediction view sent POST http://localhost:5173/api/predict, HTTP 200, map and forecast chart visible.
+The Flask test client also still returns HTTP 200 for POST /api/predict junction 1 at 2017-06-15T10:00:00 with Spatial_GRU, 53 features, and lookback 168 (backend.test_simulation_stage7).
+
+9. Target leakage and feature integrity
+Executed: spatial feature_config.json has 53 features, lookback 168, and "Vehicles" is not in the feature list. split_fractions are train 0.7, validation 0.15, test 0.15. The target field is "Vehicles", separate from the input feature list.
+Source inspection: backend/services/spatial_prediction_service.py rejects Vehicles in feature_config and raises if Vehicles(T) enters the feature tensor. ml/simulation/simulation_engine.py calls that spatial predict_request. It does not call the baseline GRU for the simulation. Historical traffic is stored on the simulation result as the observed count, not placed in the model tensor by the React client.
+Stage 4 and Stage 7, which call predict_request, passed in this run.
+
+10. Artifact hashes
+SHA-256 before the suite and again after the suite matched.
+Spatial model.keras 16d7fb47f1bc3b8575d7f470604043ff96615c7a7d6a7a5e199003e8262c7598
+Spatial feature_scaler.joblib 9438633af0d18176c7837eba4b81e8bbfe64b32f4a923f59f3e9901bdac47b82
+Spatial target_scaler.joblib 9b8f13e0a5a4fcba3add33002732189f527357399e8a7c27dd66b60f096a74be
+Spatial feature_config.json 2e71f126f81f60a83ddff3e6b9c278ffb5d5a9a162e1e102e3b6e0e1eec66089
+Baseline model.keras d41c8e1f7ad4b7ec7185a370d2c1702630321822f3785e64b3a7311322788230
+Baseline feature_scaler.joblib e05d61ecab533414333b8e29676e2cf248858cbf3772daef5deafa4d2870ada7
+Baseline target_scaler.joblib 53d4779f59b15fc1b4df21d5f379002de4f5be5af82a7bd4091d6b98b1aab5a2
+
+11. Browser checks and limitations
+Executed in the browser: the two success timestamps, five error inputs, prediction regression, same-stack double click, a later submit, and a normal double-click.
+Not executed in the browser: a production timestamp that selects a negative correlation or excludes a source. Those paths were executed as synthetic unittest fixtures.
+The duplicate-submit check is not an installed frontend unit test.
+
+12. Defects and fixes
+One defect was fixed: same-turn duplicate simulation submits. The guard is the in-flight ref in SimulationPanel.tsx.
+No other production defect was found. No formula, model, dataset, or prediction change was made.
+
+13. Known limitations
+The real June timestamps used in the UI still selected positive correlations and included every source. Negative sign and exclusion are covered by the synthetic tests, not by those two screens.
+The duplicate-submit regression lives in this session's browser check, not in npm test.
+Keras still emits the NumPy deprecation warning during inference.
+
+14. Final status
+Passed: Stage 8 synthetic tests; Stage 1, 2, 3, 4, 7 engine tests; both Flask simulation test modules; lint; build; artifact hashes unchanged; browser success, error, prediction, and duplicate-submit checks; feature_config 53 / lookback 168 / no Vehicles feature.
+Failed: none.
+Skipped: npm test, because package.json does not define it. No other unittest modules exist to run.
+Unverified in the browser: a live screen showing a negative selected correlation or an excluded contribution. Verified instead by test_stage8.py.
+Source inspection only: spatial service tensor guard and the engine's use of spatial predict_request rather than the baseline GRU.

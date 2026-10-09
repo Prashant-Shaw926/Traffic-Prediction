@@ -1,0 +1,108 @@
+Stage 6 React historical traffic network simulation view
+Generated from the production build, ESLint, and a browser run against Flask and Vite.
+This screen displays a historical simulation. It does not receive an external live traffic feed.
+The dataset ends at 2017-06-30 23:00:00.
+
+1. Files created
+- src/types/simulation.ts
+- src/api/simulation.ts
+- src/components/ViewSwitch.tsx
+- src/components/simulation/SimulationPanel.tsx
+- src/components/simulation/TrafficNetwork.tsx
+- src/components/simulation/relationship.ts
+- results/dynamic_simulation_stage6_report.txt
+
+2. Files modified
+- src/App.tsx — header switch between Prediction and Historical Traffic Network Simulation
+- src/components/AppShell.tsx — optional header slot for that switch
+
+No files under ml/simulation/, backend/services/, models/, or scalers were edited for Stage 6.
+No npm dependency was added.
+
+3. Components and API client
+- runSimulation posts { datetime } to POST /api/simulation through VITE_API_BASE_URL.
+- A datetime-local value of YYYY-MM-DDTHH:mm is sent with :00 appended.
+- HTTP 400 shows the backend error string.
+- SimulationPanel owns the timestamp, clears the previous result when a request starts, and disables Run Simulation while the request is in flight.
+- TrafficNetwork draws one node per returned junction and one arrow per returned relationship.
+- The inspector lists junction cards, the selected relationship, influence contributions, and metadata.
+
+4. API fields consumed
+timestamp, junctions[].junction_id, predicted_traffic, historical_traffic, incoming_influence, valid_source_count,
+relationships[].source_junction, target_junction, lag_hours, correlation, absolute_correlation, paired_observations, window_start, window_end,
+influence_result.metadata.score_kind, formula, description,
+influence_result.junction_influences[].incoming_influence, valid_source_count, contributions[],
+influence_result.excluded_contributions[].reason,
+metadata.historical_simulation, model, features, lookback, relationship_method, supported_lags, window_start, window_end, influence_score_kind, dataset_end.
+
+historical_traffic and incoming_influence are number or null. The UI does not recompute Pearson correlation or the influence formula.
+
+5. How the network is drawn
+Node positions come from the returned junction ids, arranged around a circle. For four junctions that places one node at each corner of a diamond. That layout is display-only and is not a road map or GPS.
+Each relationships item becomes an SVG line with an arrowhead from source to target. Stroke width and opacity follow absolute_correlation. The signed correlation and lag are written in the selected-relationship panel and in the relationship list. A legend states that thickness is absolute correlation and the arrow is direction.
+
+6. Browser checks
+Default timestamp shown: 2017-06-15T10:00.
+With the simulation response delayed, Run Simulation was disabled and its label was "Running…", then it became enabled after the network appeared.
+
+2017-06-15T10:00
+HTTP 200. 4 nodes. 12 edges, matching 12 relationships.
+Junction cards:
+- Junction 1: predicted 90.85 veh, historical 90.0 veh, influence index 38.81, valid sources 3
+- Junction 2: predicted 28.74 veh, historical 29.0 veh, influence index 84.70, valid sources 3
+- Junction 3: predicted 20.78 veh, historical 23.0 veh, influence index 78.89, valid sources 3
+- Junction 4: predicted 10.24 veh, historical 11.0 veh, influence index 85.68, valid sources 3
+Selected relationship: 1 to 2, signed correlation 0.931, lag 1 hour, 167 paired observations.
+API correlation for that edge was 0.930776 and lag 1.
+Score kind: influence_index.
+Junction 1 contributions shown from the response: source 2 traffic 25.0, signed 0.855, lag 1h, weight 0.855, contribution 21.37; source 3 traffic 16.0, contribution 9.85; source 4 traffic 12.0, contribution 7.59.
+Excluded contributions section was absent because the response list was empty.
+
+2017-06-25T10:00
+HTTP 200. 4 nodes. 12 edges.
+Junction cards:
+- Junction 1: predicted 50.78 veh, historical 52.0 veh, influence index 20.50
+- Junction 2: predicted 12.90 veh, historical 13.0 veh, influence index 52.84
+- Junction 3: predicted 14.81 veh, historical 17.0 veh, influence index 34.84
+- Junction 4: predicted 6.14 veh, historical 5.0 veh, influence index 48.85
+Selected relationship: 1 to 2, signed correlation 0.954, lag 1 hour.
+The relationship set changed. Example: 1 to 3 was lag 24 and correlation 0.635 on 15 June, and lag 1 and correlation 0.592 on 25 June.
+
+Error checks, previous network cleared after each failure:
+- 2017-06-15T10:30: HTTP 400, UI text "Datetime must be aligned to a full hour."
+- 2017-01-01T00:00: HTTP 400, UI text "Insufficient historical data for the requested simulation timestamp."
+- 2017-07-01T10:00: HTTP 400, UI text "The historical dataset ends at 2017-06-30 23:00 and does not contain sufficient data for this timestamp."
+
+The inspector stated that relationships are lagged statistical associations and that the app is not a live traffic feed.
+
+7. Prediction regression
+After returning to Prediction, a junction was selected and Predict was clicked.
+The browser sent POST http://localhost:5173/api/predict and received HTTP 200.
+No /api/simulation request was sent during that prediction.
+
+8. Build and lint
+npm run build: passed (tsc -b and vite build).
+npm run lint: passed after relationshipKey was moved out of the component file. The first lint run failed on react-refresh/only-export-components; that was fixed and lint was run again.
+
+9. Limitations
+Both checked timestamps returned positive selected correlations, so a negative sign was not present in those responses. The panel prints the signed correlation field as returned.
+No excluded contributions were returned for 2017-06-15T10:00, so that list was not shown.
+The datetime-local control still cannot hold the string "not-a-datetime". That case is submitted through the raw timestamp field described below.
+
+10. Follow-up: raw timestamp submission
+Files updated: src/api/simulation.ts and src/components/simulation/SimulationPanel.tsx.
+The historical timestamp control is unchanged. A "Submit a raw timestamp" checkbox reveals a text field. When that mode is on, the typed string is posted as datetime with no :00 suffix and no other rewrite. The picker path still appends :00 to YYYY-MM-DDTHH:mm values.
+
+Browser verification after the change:
+- Raw field kept "not-a-datetime". POST body was {"datetime":"not-a-datetime"}. HTTP 400. UI text "Invalid datetime."
+- Empty raw field posted {"datetime":""}. HTTP 400. UI text "Missing request fields: datetime is required."
+- 2017-06-15T10:00 via the picker posted 2017-06-15T10:00:00, HTTP 200, 4 nodes, 12 edges. Junction 1 card: predicted 90.85 veh, historical 90.0 veh, influence index 38.81. First relationship 1 to 2, lag 1, correlation 0.930776.
+- 2017-06-25T10:00 via the picker posted 2017-06-25T10:00:00, HTTP 200, 4 nodes, 12 edges. Junction 1 card: predicted 50.78 veh, historical 52.0 veh, influence index 20.50. First relationship 1 to 2, lag 1, correlation 0.954143.
+- 2017-06-15T10:30 posted 2017-06-15T10:30:00. HTTP 400. UI text "Datetime must be aligned to a full hour." Network cleared.
+- 2017-01-01T00:00 posted 2017-01-01T00:00:00. HTTP 400. UI text "Insufficient historical data for the requested simulation timestamp." Network cleared.
+- 2017-07-01T10:00 posted 2017-07-01T10:00:00. HTTP 400. UI text "The historical dataset ends at 2017-06-30 23:00 and does not contain sufficient data for this timestamp." Network cleared.
+- Prediction view again sent POST /api/predict and received HTTP 200.
+
+npm run lint passed. npm run build passed.
+No Python files, backend endpoints, models, scalers, datasets, or /api/predict were modified for this follow-up.
+

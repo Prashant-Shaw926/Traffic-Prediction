@@ -6,6 +6,7 @@ from flask import Blueprint, jsonify, request
 
 from backend.config import LOCATIONS, MODEL_NAME
 from backend.services.history_service import history_request
+from backend.services.simulation_api import simulation_response
 from backend.services.spatial_prediction_service import (
     predict_request,
     spatial_model_loaded,
@@ -44,3 +45,11 @@ def predict():
     if not isinstance(body, dict):
         return json_error("Missing request fields: JSON body is required.", 400)
     return jsonify(predict_request(body))
+
+
+@traffic_bp.post("/simulation")
+def simulation():
+    body = request.get_json(silent=True)
+    if not isinstance(body, dict):
+        return json_error("Missing request fields: JSON body is required.", 400)
+    return jsonify(simulation_response(body))

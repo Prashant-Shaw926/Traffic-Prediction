@@ -5,6 +5,8 @@ import { ForecastChart } from './components/ForecastChart'
 import { HistoryCompare } from './components/HistoryCompare'
 import { LocationMap } from './components/LocationMap'
 import { QueryBar } from './components/QueryBar'
+import { SimulationPanel } from './components/simulation/SimulationPanel'
+import { ViewSwitch, type WorkspaceView } from './components/ViewSwitch'
 import type {
   CongestionLevel,
   Junction,
@@ -19,6 +21,7 @@ const INITIAL_WINDOW = defaultWindow()
 type Status = 'idle' | 'loading' | 'ready'
 
 const App = () => {
+  const [view, setView] = useState<WorkspaceView>('prediction')
   const [locations, setLocations] = useState<Junction[]>([])
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
     null,
@@ -97,8 +100,13 @@ const App = () => {
     history !== null &&
     result.locationId === selectedLocationId
 
+  if (view === 'simulation') {
+    return <SimulationPanel view={view} onViewChange={setView} />
+  }
+
   return (
     <AppShell
+      nav={<ViewSwitch view={view} onViewChange={setView} />}
       query={
         <QueryBar
           locations={locations}

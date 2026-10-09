@@ -1,0 +1,55 @@
+Stage 1 dynamic simulation input foundation
+Generated after the Stage 1 unit tests passed. No relationship scores were calculated.
+
+Files created
+- ml/simulation/__init__.py
+- ml/simulation/config.py
+- ml/simulation/models.py
+- ml/simulation/data_provider.py
+- ml/simulation/tests/__init__.py
+- ml/simulation/tests/test_stage1.py
+- results/dynamic_simulation_stage1_report.txt
+
+Files modified
+- None. Existing prediction, preprocessing, model, scaler, Flask, and React files were not edited.
+
+Simulation input definition
+- SimulationRequest: one hour-aligned timestamp.
+- SimulationWindow: closed interval [T - 167 hours, T] and one JunctionTrafficState per supported junction.
+- JunctionTrafficState: junction id plus chronological TrafficObservation(timestamp, vehicles) copied from data/raw/traffic.csv.
+- SimulationData: request, window, and the SimulationConfig used to build them.
+- SimulationConfig defaults: historical_window_hours=168, supported_junctions=(1, 2, 3, 4), supported_lags=(1, 2, 3, 24, 168), minimum_observations=24, dataset_end=2017-06-30 23:00:00.
+- RelationshipSettings.minimum_paired_observations=24 is stored only. Stage 1 does not compute pairs or weights.
+
+Historical window behavior
+- The window ends at the requested timestamp T and starts at T - (historical_window_hours - 1) hours.
+- Each supported junction must have a real row at T and at least minimum_observations real rows inside the window.
+- Missing hours stay missing. regularize_hourly() is not called.
+
+Validation rules
+- Malformed timestamp: "Invalid datetime."
+- Non-hourly timestamp: "Datetime must be aligned to a full hour."
+- After dataset_end or after the latest raw timestamp: "The historical dataset ends at 2017-06-30 23:00 and does not contain sufficient data for this timestamp."
+- Missing endpoint or too few real rows: "Insufficient historical data for the requested simulation timestamp."
+
+Leakage prevention
+- Rows with DateTime > T are removed before the window is sliced.
+- The builder asserts that the cutoff and the sliced window contain no future timestamps.
+- Vehicle counts are floats from the raw CSV after dropping unparseable rows and duplicate (Junction, DateTime) keys. No values are interpolated.
+
+Tests performed
+Command (project virtualenv; system py -3 does not have pandas):
+.\.venv\Scripts\python.exe -m unittest ml.simulation.tests.test_stage1 -v
+
+Result: Ran 6 tests in 0.404s — OK
+- test_valid_timestamp_has_four_junctions_in_order_without_future_rows
+- test_timestamp_after_dataset_end_is_rejected (2017-07-01 10:00 and 2026-10-02 10:00)
+- test_timestamp_before_sufficient_history_is_rejected (2017-01-01 00:00)
+- test_malformed_timestamp_is_rejected
+- test_non_hourly_timestamp_is_rejected
+- test_same_timestamp_is_deterministic
+
+The valid case checks junctions (1, 2, 3, 4), chronological order, every observation timestamp <= T, window start T - 167 hours, and vehicle sequences equal to a direct filter of the raw history.
+
+Frozen artifacts
+No model files, scaler files, existing prediction services, preprocessing modules, or frontend files were modified. No junction-to-junction relationship weights were introduced.
